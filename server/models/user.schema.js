@@ -1,6 +1,9 @@
 import mongoose from 'mongoose';
 const {schema, model} = mongoose;
 import AuthRoles from '../utils/authRoles'
+import bcrypt from 'bcryptjs'
+import JWT from 'jsonwebtoken'
+import crypto from 'crypto'
 
 const userSchema = schema(
     {
@@ -33,5 +36,12 @@ const userSchema = schema(
         timestamps: true
     }
 )
+
+// pre hooks mongoose
+userSchema.pre("save", async function(next){
+   if (!this.modified("password")) return next();
+   this.password = await bcrypt.hash(this.password, 10)
+   next()
+})
 
 module.exports = model('user', userSchema)
