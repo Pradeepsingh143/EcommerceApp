@@ -11,7 +11,6 @@ const collectionSchema = schema (
             maxLength : [130, "collection name should not be more than 130 characters"],
         },
 
-
     }
 )
 
