@@ -1,10 +1,11 @@
 import mongoose from "mongoose";
-const { schema, model } = mongoose;
 import AuthRoles from "../utils/authRoles";
 import bcrypt from "bcryptjs";
 import JWT from "jsonwebtoken";
 import crypto from "crypto";
 import config from "../config/index";
+
+const { schema, model } = mongoose;
 
 const userSchema = schema(
   {
@@ -80,4 +81,4 @@ userSchema.methods = {
   },
 };
 
-module.exports = model("user", userSchema);
+export default model("user", userSchema);
