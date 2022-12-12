@@ -4,7 +4,7 @@ import AuthRoles from "../utils/authRoles";
 import bcrypt from "bcryptjs";
 import JWT from "jsonwebtoken";
 import crypto from "crypto";
-import config  from "../config/index";
+import config from "../config/index";
 
 const userSchema = schema(
   {
@@ -40,7 +40,7 @@ const userSchema = schema(
 
 // pre hooks mongoose
 userSchema.pre("save", async function (next) {
-  if (!this.modified("password")) return next();
+  if (!this.isModified("password")) return next();
   this.password = await bcrypt.hash(this.password, 10);
   next();
 });
@@ -57,13 +57,26 @@ userSchema.methods = {
     return JWT.sign(
       {
         _id: this._id,
-        role: this.role
+        role: this.role,
       },
       config.JWT_SECRET,
       {
-        expiresIn: config.JWT_EXPIRY
+        expiresIn: config.JWT_EXPIRY,
       }
     );
+  },
+
+  // forgot passsword
+  generateForgotPasswordToken: function () {
+    const forgotToken = crypto.randomBytes(18).toString("hex");
+    this.forgotPasswordToken = crypto
+      .createHash("sha256")
+      .update(forgotToken)
+      .digest("hex");
+
+    this.forgotPasswordExpiry = Date.now() + 20 * 60 * 1000
+
+    return forgotToken
   },
 };
 
