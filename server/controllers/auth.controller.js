@@ -4,7 +4,6 @@ import CustomError from "../utils/customError";
 import cookieOptions from "../utils/cookieOptions";
 
 
-
 /***********************************************************
  * @SIGNUP
  * @Route http://localhost:4000/api/auth/signup
@@ -47,7 +46,6 @@ export const signUp = asyncHandler(async (req, res) => {
 });
 
 
-
 /***********************************************************
  * @LOGIN
  * @Route http://localhost:4000/api/auth/login
@@ -84,7 +82,6 @@ export const login = asyncHandler(async (req, res) => {
 
   throw new CustomError("Invaild credentials", 400);
 });
-
 
 
 /***********************************************************
