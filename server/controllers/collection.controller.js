@@ -71,8 +71,6 @@ export const updateCollection = asyncHandler(async (req, res) => {
   });
 });
 
-
-
 /***********************************************************
  * @deleteCollection
  * @Route http://localhost:4000/api/delete/collection
@@ -83,7 +81,9 @@ export const updateCollection = asyncHandler(async (req, res) => {
 export const deleteCollection = asyncHandler(async (req, res) => {
   const { id: collectionId } = req.params;
 
-  const deletedCollection = await CollectionSchema.findByIdAndDelete(collectionId);
+  const deletedCollection = await CollectionSchema.findByIdAndDelete(
+    collectionId
+  );
 
   if (!deletedCollection) {
     throw new CustomError("Collection not found", 401);
@@ -97,7 +97,6 @@ export const deleteCollection = asyncHandler(async (req, res) => {
   });
 });
 
-
 /***********************************************************
  * @getAllCollections
  * @Route http://localhost:4000/api/collections
@@ -106,8 +105,7 @@ export const deleteCollection = asyncHandler(async (req, res) => {
  * @returns success message
  ***********************************************************/
 export const getAllCollections = asyncHandler(async (req, res) => {
-
-  const collection = CollectionSchema.find();
+  const collection = await CollectionSchema.find();
 
   if (!collection) {
     throw new CustomError("Collections not found", 401);
@@ -116,6 +114,6 @@ export const getAllCollections = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     message: "fetch collection list successfully",
-    collection
+    collection,
   });
 });
