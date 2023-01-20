@@ -71,3 +71,28 @@ export const updateCollection = asyncHandler(async (req, res) => {
   });
 });
 
+
+
+/***********************************************************
+ * @deleteCollection
+ * @Route http://localhost:4000/api/delete/collection
+ * @description delete collection
+ * @parameter id: CollectionId
+ * @returns success message
+ ***********************************************************/
+export const deleteCollection = asyncHandler(async (req, res) => {
+  const { id: collectionId } = req.params;
+
+  const deletedCollection = await CollectionSchema.findByIdAndDelete(collectionId);
+
+  if (!deletedCollection) {
+    throw new CustomError("Collection not found", 401);
+  }
+
+  deleteCollection = null;
+
+  res.status(200).json({
+    success: true,
+    message: "Collection deleted successfully",
+  });
+});
