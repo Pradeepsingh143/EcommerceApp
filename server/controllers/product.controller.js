@@ -27,6 +27,7 @@ export const addProduct = asyncHandler(async (req, res) => {
         throw new CustomError(err.message || "something went wrong", 500);
       }
 
+      // generate productId from Mongoose 
       let productID = new Mongoose.Types.ObjectId().toHexString();
 
       // check fields
@@ -59,29 +60,86 @@ export const addProduct = asyncHandler(async (req, res) => {
         })
       );
 
+      // create an imageArray variable and assign imageArrayResponse
       const imageArray = await imageArrayResponse;
 
+      // create product in db
       const product = await Product.create({
         _id: productID,
         photos: imageArray,
         ...fields,
       });
 
+      // if product not created
       if (!product) {
+        // * if product got error while creating then delete all images from AWS s3 bucket
+        imageArray.map(async (_file, index) => {
+          await s3DeleteFile({
+            bucketName: config.S3_BUCKET_NAME,
+            key: imageArray[index],
+          });
+        });
+
         throw new CustomError("product was not created", 400);
       }
 
-      // send back response
+      //  back response
       res.status(200).json({
         success: true,
         message: "product was create successfully",
-        product
-      })
+        product,
+      });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message || "something went wrong product was not created"
-          })
+      res.status(500).json({
+        success: false,
+        message:
+          error.message || "something went wrong product was not created",
+      });
     }
+  });
+});
+
+/***********************************************************
+ * @getAllProducts
+ * @Route http://localhost:4000/api/product
+ * @description get all product list
+ * @parameter
+ * @returns success message, product object
+ ***********************************************************/
+
+export const getAllProducts = asyncHandler(async (req, res) => {
+  const products = await Product.find({});
+
+  if (!products) {
+    throw new CustomError("No product found", 404);
+  }
+
+  res.status(200).json({
+    success: true,
+    message: "all product fetched successfully",
+    products,
+  });
+});
+
+/***********************************************************
+ * @getProductsById
+ * @Route http://localhost:4000/api/product/:id
+ * @description get all product list
+ * @parameter
+ * @returns success message, product object
+ ***********************************************************/
+
+export const getProductById = asyncHandler(async (req, res) => {
+  const { id: productId } = req.params;
+  const product = await Product.findById(productId);
+
+  if (!product) {
+    throw new CustomError("Product not found", 404);
+  }
+
+  res.status(200).json({
+    success: true,
+    message: "all product fetched successfully",
+    product,
   });
 });
