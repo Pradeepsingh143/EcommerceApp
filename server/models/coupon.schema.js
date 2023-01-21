@@ -5,7 +5,8 @@ const couponSchema = schema(
   {
     code: {
       type: String,
-      reuqired: [true, "please provide coupon name"],
+      required: [true, "please provide coupon name"],
+      unique: true,
     },
     discount: {
       type: Number,
