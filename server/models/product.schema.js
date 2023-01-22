@@ -1,7 +1,7 @@
-import mongoose, { Schema } from "mongoose";
-const { schema, model } = mongoose;
+import mongoose from "mongoose";
+const { Schema, model } = mongoose;
 
-const productSchema = model(
+const productSchema = Schema(
   {
     name: {
       type: String,

@@ -5,9 +5,9 @@ import JWT from "jsonwebtoken";
 import crypto from "crypto";
 import config from "../config/index";
 
-const { schema, model } = mongoose;
+const { Schema, model } = mongoose;
 
-const userSchema = schema(
+const userSchema = Schema(
   {
     name: {
       type: String,

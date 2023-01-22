@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
 
-const {schema, model} = mongoose
+const {Schema, model} = mongoose
 
-const collectionSchema = schema (
+const collectionSchema = Schema (
     {
         name : {
             type : String,

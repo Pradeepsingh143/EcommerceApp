@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
-const { schema, model } = mongoose;
+const { Schema, model } = mongoose;
 import OrderStatus from "../utils/orderStatus";
 
-const orderSchema = schema(
+const orderSchema = Schema(
   {
     product: {
       type: [
