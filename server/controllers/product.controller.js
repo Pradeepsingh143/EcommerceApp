@@ -1,11 +1,11 @@
-import Product from "../models/product.schema";
+import Product from "../models/product.schema.js";
 import formidable from "formidable";
 import fs from "fs";
 import { s3DeleteFile, s3FileUpload } from "../services/s3.files";
 import Mongoose from "mongoose";
-import asyncHandler from "../services/asyncHandler";
-import CustomError from "../utils/customError";
-import config from "../config";
+import asyncHandler from "../services/asyncHandler.js";
+import CustomError from "../utils/customError.js";
+import config from "../config.js";
 
 /***********************************************************
  * @createProduct

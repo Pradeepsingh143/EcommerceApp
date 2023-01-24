@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
-import AuthRoles from "../utils/authRoles";
+import AuthRoles from "../utils/authRoles.js";
 import bcrypt from "bcryptjs";
 import JWT from "jsonwebtoken";
 import crypto from "crypto";
-import config from "../config/index";
+import config from "../config/index.js";
 
 const { Schema, model } = mongoose;
 

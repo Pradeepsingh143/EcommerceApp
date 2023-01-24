@@ -1,5 +1,5 @@
 import Razorpay from "razorpay";
-import config from "./index";
+import config from "./index.js";
 
 const RazorPayInstance = new Razorpay({
   key_id: config.RAZORPAY_KEY_ID,

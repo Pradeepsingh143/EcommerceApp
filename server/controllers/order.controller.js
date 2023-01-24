@@ -1,10 +1,10 @@
-import Order from "../models/order.schema";
-import Product from "../models/product.schema";
-import Coupon from "../models/coupon.schema";
-import RazorPayInstance from "../config/razorpay.config";
-import CustomError from "../utils/customError";
-import asynHandler from "../services/asyncHandler";
-import config from "../config/index";
+import Order from "../models/order.schema.js";
+import Product from "../models/product.schema.js";
+import Coupon from "../models/coupon.schema.js";
+import RazorPayInstance from "../config/razorpay.config.js";
+import CustomError from "../utils/customError.js";
+import asynHandler from "../services/asyncHandler.js";
+import config from "../config/index.js";
 
 /**********************************************************
  * @GENEARATE_RAZORPAY_ID
@@ -62,15 +62,15 @@ export const generateRazorpayId = asynHandler(async (req, res) => {
 
     const order = await RazorPayInstance.orders.create(options);
 
-    if(!order){
-        throw new CustomError("!Failed, Order not created", 400);
+    if (!order) {
+      throw new CustomError("!Failed, payment not recived", 400);
     }
 
     res.status(200).json({
-        success: true,
-        message: "Order created successfully",
-        order
-    })
+      success: true,
+      message: "Order created successfully",
+      order,
+    });
   } catch (error) {
     console.log(
       `Error finding products: ${error.message || "product not found"}`
