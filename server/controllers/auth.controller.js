@@ -35,10 +35,10 @@ export const signUp = asyncHandler(async (req, res) => {
   });
 
   const token = user.getJwtToken();
-  console.log(user);
   user.password = undefined;
 
-  res.cookies("token", token, cookieOptions);
+  res.cookie("token", token, cookieOptions);
+
   return res.status(200).json({
     success: true,
     token,
@@ -78,9 +78,13 @@ export const login = asyncHandler(async (req, res) => {
       token,
       user,
     });
+  } else {
+    res.status(400).json({
+      success: false,
+      message: "Login Failed Invalid credentials",
+    });
+    throw new CustomError("Invaild credentials", 400);
   }
-
-  throw new CustomError("Invaild credentials", 400);
 });
 
 /***********************************************************
@@ -92,11 +96,13 @@ export const login = asyncHandler(async (req, res) => {
  ***********************************************************/
 
 export const logout = asyncHandler(async (_req, res) => {
-  // Also can use {res.clearCookie("token")}
-  res.cookie("token", null, {
-    expires: new Date(Date.now()),
-    httpOnly: true,
-  });
+
+  res.clearCookie("token");
+  // * you can also use
+  // res.cookie("token", null, {
+  //   expires: new Date(Date.now()),
+  //   httpOnly: true,
+  // });
   res.status(200).json({
     success: true,
     message: "logged out",
@@ -134,14 +140,18 @@ export const forgotPassword = asyncHandler(async (req, res) => {
     });
     res.status(200).json({
       succes: true,
-      message: `Email send to ${user.email}`,
+      message: `Email successfully sent to ${user.email}`,
     });
   } catch (error) {
     // remove forgotPasswordToken and forgotPasswordExpiry if code failed
     user.forgotPasswordToken = undefined;
     user.forgotPasswordExpiry = undefined;
     user.save({ validateBeforeSave: false });
-    throw new CustomError(error.message || "Email send failed", 400);
+    res.status(400).json({
+      succes: false,
+      message: `Email send failed to ${user.email}`,
+    });
+    throw new CustomError(`Mail Error: ${error.message}` || "Email send failed", 400);
   }
 });
 
@@ -193,7 +203,6 @@ export const resetPassword = asyncHandler(async (req, res) => {
   });
 });
 
-
 /***********************************************************
  * @GET_PROFILE
  * @Route http://localhost:4000/api/auth/profile
@@ -201,13 +210,13 @@ export const resetPassword = asyncHandler(async (req, res) => {
  * @parameter
  * @returns user object
  ***********************************************************/
-export const getProfile = asyncHandler(async(req, res)=>{
-  const {user} = req
+export const getProfile = asyncHandler(async (req, res) => {
+  const { user } = req;
   if (!user) {
-    throw new CustomError('User not found', 404)
+    throw new CustomError("User not found", 404);
   }
   res.status(200).json({
     succes: true,
-    user
-  })
-})
+    user,
+  });
+});

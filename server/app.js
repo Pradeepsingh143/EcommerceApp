@@ -14,12 +14,12 @@ app.use(cookieParser());
 // morgan logger
 app.use(morgan("tiny"));
 
-// home route
-app.use("/", (req, res) => {
+// // home route
+app.use("/home", (_req, res) => {
   res.status(201).send("Hello, welcome to ecomm backend");
 });
 
 // use user routes
-app.use("/auth", userRoutes);
+app.use("/api/auth", userRoutes);
 
 export default app;

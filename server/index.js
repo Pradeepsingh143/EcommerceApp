@@ -5,8 +5,8 @@ import config from "./config/index.js";
 (async () => {
   try {
     mongoose.set('strictQuery', true);
-    await mongoose.connect(config.MONGODB_URL);
-    console.log("Db connected successfully");
+    const connect = await mongoose.connect(config.MONGODB_URL);
+    console.log(`Db connected successfuly with Host(${connect.connection.host}) Port(${connect.connection.port}) Name(${connect.connection.name})`);
 
     app.on("error", (err) => {
       console.log("Error: ", err.message || "App not running");
@@ -14,7 +14,7 @@ import config from "./config/index.js";
     });
 
     app.listen(config.PORT, () => {
-      console.log(`App is listening on port ${config.PORT}`);
+      console.log(`App is listening on port http://localhost:${config.PORT}`);
     });
   } catch (error) {
     console.log(`Mongodb Connection Error: ${error.message}`);

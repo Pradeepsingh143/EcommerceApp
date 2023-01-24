@@ -1,15 +1,27 @@
-import nodemailer from 'nodemailer'
-import config from './index.js'
+import nodemailer from "nodemailer";
+import config from "./index.js";
+import { google } from "googleapis";
+
+// create oAuth2Client
+const oAuth2Client = new google.auth.OAuth2(
+  config.GMAIL_CLIENT_ID,
+  config.GMAIL_CLIENT_SECRET,
+  config.GMAIL_REDIRECT_URI
+);
+
+oAuth2Client.setCredentials({ refresh_token: config.GMAIL_REFRESH_TOKEN });
+const accessToken = await oAuth2Client.getAccessToken();
 
 const transporter = nodemailer.createTransport({
-    host: config.SMPT_MAIL_HOST,
-    port: config.SMPT_MAIL_PORT,
-    secure: false, // true for 465, false for other ports
-    auth: {
-      user: config.SMPT_MAIL_USER, // generated ethereal user
-      pass: config.SMPT_MAIL_PASS, // generated ethereal password
-    },
-  });
+  service: 'gmail',
+  auth: {
+    type: 'OAuth2',
+    user: 'singhpardeep585@gmail.com',
+    clientId: config.GMAIL_CLIENT_ID,
+    clientSecret: config.GMAIL_CLIENT_SECRET,
+    refreshToken: config.GMAIL_REFRESH_TOKEN,
+    accessToken: accessToken,
+  },
+});
 
-
-export default transporter
+export default transporter;
