@@ -25,7 +25,7 @@ export const signUp = asyncHandler(async (req, res) => {
   const existingUser = await User.findOne({ email });
 
   if (existingUser) {
-    throw new CustomError("User already exists", 400);
+    throw new CustomError("Email already registered", 400);
   }
 
   const user = await User.create({
@@ -78,13 +78,8 @@ export const login = asyncHandler(async (req, res) => {
       token,
       user,
     });
-  } else {
-    res.status(400).json({
-      success: false,
-      message: "Login Failed Invalid credentials",
-    });
-    throw new CustomError("Invaild credentials", 400);
   }
+  throw new CustomError("Invaild credentials", 400);
 });
 
 /***********************************************************
@@ -96,7 +91,6 @@ export const login = asyncHandler(async (req, res) => {
  ***********************************************************/
 
 export const logout = asyncHandler(async (_req, res) => {
-
   res.clearCookie("token");
   // * you can also use
   // res.cookie("token", null, {
@@ -147,11 +141,10 @@ export const forgotPassword = asyncHandler(async (req, res) => {
     user.forgotPasswordToken = undefined;
     user.forgotPasswordExpiry = undefined;
     user.save({ validateBeforeSave: false });
-    res.status(400).json({
-      succes: false,
-      message: `Email send failed to ${user.email}`,
-    });
-    throw new CustomError(`Mail Error: ${error.message}` || "Email send failed", 400);
+    throw new CustomError(
+      `Mail Error: ${error.message}` || "Email send failed",
+      400
+    );
   }
 });
 
@@ -165,7 +158,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
 
 export const resetPassword = asyncHandler(async (req, res) => {
   const { token: resetToken } = req.params;
-  const { password, comfirmPassword } = req.body;
+  const { password, confirmPassword } = req.body;
 
   const resetPasswordToken = crypto
     .createHash("sha256")
@@ -181,7 +174,7 @@ export const resetPassword = asyncHandler(async (req, res) => {
     throw new CustomError("password token is invaild or expired", 400);
   }
 
-  if (password !== comfirmPassword) {
+  if (password !== confirmPassword) {
     throw new CustomError("password doesn,t match", 400);
   }
 
@@ -199,6 +192,7 @@ export const resetPassword = asyncHandler(async (req, res) => {
   res.cookie("token", token, cookieOptions);
   res.status(200).json({
     success: true,
+    message: "password reset successfully",
     user,
   });
 });
@@ -211,12 +205,60 @@ export const resetPassword = asyncHandler(async (req, res) => {
  * @returns user object
  ***********************************************************/
 export const getProfile = asyncHandler(async (req, res) => {
-  const { user } = req;
+  const user = await User.find({}).select("name email role");
   if (!user) {
     throw new CustomError("User not found", 404);
   }
   res.status(200).json({
     succes: true,
+    user,
+  });
+});
+
+/***********************************************************
+ * @CHANGE_PASSWORD
+ * @Route http://localhost:4000/api/auth/password/change
+ * @description change password only if user login and have old password
+ * @parameter oldPassword, Password, confirmPassword
+ * @returns user object
+ ***********************************************************/
+export const changePassword = asyncHandler(async (req, res) => {
+  const { oldPassword, password, confirmPassword } = req.body;
+
+  if (!(oldPassword && password && confirmPassword)) {
+    throw new CustomError("All fields are required", 400);
+  }
+
+  if (password !== confirmPassword) {
+    throw new CustomError("password doesn,t match", 400);
+  }
+
+  if (oldPassword === confirmPassword) {
+    throw new CustomError(
+      "New password must be different from old password",
+      400
+    );
+  }
+
+  const user = await User.findById(
+    { _id: req.user._id },
+    "email role password"
+  );
+  const comparePassword = await user.comparePassword(oldPassword);
+  if (!comparePassword) {
+    throw new CustomError("Old password is invaild", 400);
+  }
+
+  user.password = password;
+  await user.save();
+  user.password = undefined;
+  const token = user.getJwtToken();
+
+  // //helper method for cookie can be added
+  res.cookie("token", token, cookieOptions);
+  res.status(200).json({
+    success: true,
+    message: "password change successfully",
     user,
   });
 });
