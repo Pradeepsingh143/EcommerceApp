@@ -3,6 +3,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import morgan from "morgan";
 import userRoutes from "./routes/userRoutes.js";
+import CustomError from "./utils/customError.js";
 
 const app = express();
 
@@ -14,12 +15,24 @@ app.use(cookieParser());
 // morgan logger
 app.use(morgan("tiny"));
 
-// // home route
+// home route
 app.use("/home", (_req, res) => {
   res.status(201).send("Hello, welcome to ecomm backend");
 });
 
 // use user routes
 app.use("/api/auth", userRoutes);
+
+//handle custom error
+app.use((err, _req, res, next) => {
+  if (err instanceof CustomError) {
+    res.status(400).json({
+      message: err.message,
+      code: err.code
+    });
+  } else {
+    next(err);
+  }
+});
 
 export default app;
