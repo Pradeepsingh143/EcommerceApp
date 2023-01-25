@@ -89,7 +89,7 @@ export const deleteCollection = asyncHandler(async (req, res) => {
     throw new CustomError("Collection not found", 401);
   }
 
-  deleteCollection = null;
+  deleteCollection = undefined;
 
   res.status(200).json({
     success: true,
