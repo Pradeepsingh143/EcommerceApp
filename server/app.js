@@ -4,6 +4,8 @@ import cors from "cors";
 import morgan from "morgan";
 import userRoutes from "./routes/userRoutes.js";
 import CustomError from "./utils/customError.js";
+import collectionRoutes from "./routes/collectionRoutes.js";
+import couponRoutes from "./routes/couponRoutes.js"
 
 const app = express();
 
@@ -22,13 +24,17 @@ app.use("/home", (_req, res) => {
 
 // use user routes
 app.use("/api/auth", userRoutes);
+// collection routes
+app.use("/api/collection", collectionRoutes);
+// coupon routes
+app.use("/api/coupon", couponRoutes);
 
 //handle custom error
 app.use((err, _req, res, next) => {
   if (err instanceof CustomError) {
     res.status(400).json({
       message: err.message,
-      code: err.code
+      code: err.code,
     });
   } else {
     next(err);
