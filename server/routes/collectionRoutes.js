@@ -5,12 +5,13 @@ import {
   deleteCollection,
   getAllCollections,
 } from "../controllers/collection.controller.js";
+import { isLoggedIn, isAdmin } from "../middlewares/auth.middleware";
 
 const router = express.Router();
 
-router.post("/create/collection", createCollection);
-router.put("/update/collection/:id", updateCollection);
-router.delete("/delete/collection/:id", deleteCollection);
-router.get("/collections", getAllCollections);
+router.post("/create", isLoggedIn, isAdmin, createCollection);
+router.put("/update/:id", isLoggedIn, isAdmin, updateCollection);
+router.delete("/delete/:id", isLoggedIn, isAdmin, deleteCollection);
+router.get("/get", getAllCollections);
 
 export default router;
