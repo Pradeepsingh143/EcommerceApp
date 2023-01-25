@@ -140,7 +140,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
     // remove forgotPasswordToken and forgotPasswordExpiry if code failed
     user.forgotPasswordToken = undefined;
     user.forgotPasswordExpiry = undefined;
-    user.save({ validateBeforeSave: false });
+    await user.save({ validateBeforeSave: false });
     throw new CustomError(
       `Mail Error: ${error.message}` || "Email send failed",
       400
