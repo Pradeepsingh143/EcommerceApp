@@ -16,14 +16,14 @@ export const createCollection = asyncHandler(async (req, res) => {
     throw new CustomError("Collection name is required", 401);
   }
 
-  const existCollection = await CollectionSchema.findOne({ collectionName });
+  const existCollection = await CollectionSchema.findOne({ name: collectionName });
 
   if (existCollection) {
     throw new CustomError("Collection name already exist in db", 401);
   }
 
   const collection = await CollectionSchema.create({
-    collectionName,
+    name: collectionName,
   });
 
   res.status(200).json({
@@ -48,7 +48,7 @@ export const updateCollection = asyncHandler(async (req, res) => {
     throw new CustomError("Collection name is required", 401);
   }
 
-  const existCollection = await CollectionSchema.findOne({ collectionName });
+  const existCollection = await CollectionSchema.findOne({ name:collectionName });
 
   if (existCollection) {
     throw new CustomError("Collection name already exist in db", 401);
@@ -66,7 +66,7 @@ export const updateCollection = asyncHandler(async (req, res) => {
 
   res.status(200).json({
     success: true,
-    message: "Collection created successfully",
+    message: "Collection updated successfully",
     updatedCollection,
   });
 });
@@ -81,15 +81,15 @@ export const updateCollection = asyncHandler(async (req, res) => {
 export const deleteCollection = asyncHandler(async (req, res) => {
   const { id: collectionId } = req.params;
 
-  const deletedCollection = await CollectionSchema.findByIdAndDelete(
-    collectionId
-  );
+  let deletedCollection = await CollectionSchema.findByIdAndDelete({
+    _id: collectionId
+  });
 
   if (!deletedCollection) {
     throw new CustomError("Collection not found", 401);
   }
 
-  deleteCollection = undefined;
+  deletedCollection = undefined;
 
   res.status(200).json({
     success: true,
@@ -105,7 +105,7 @@ export const deleteCollection = asyncHandler(async (req, res) => {
  * @returns success message
  ***********************************************************/
 export const getAllCollections = asyncHandler(async (req, res) => {
-  const collection = await CollectionSchema.find();
+  const collection = await CollectionSchema.find({});
 
   if (!collection) {
     throw new CustomError("Collections not found", 401);
