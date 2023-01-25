@@ -6,7 +6,7 @@ import {signUp, login, logout, forgotPassword, resetPassword, getProfile, change
 router.post("/signup", signUp);
 router.get("/login", login);
 router.get("/logout", logout);
-router.get("/password/forgot", forgotPassword);
+router.post("/password/forgot", forgotPassword);
 router.put("/password/reset/:token", resetPassword);
 router.get("/profile", getProfile);
 router.put("/password/change",isLoggedIn, changePassword)

@@ -26,3 +26,13 @@ export const isLoggedIn = asyncHandler(async (req, _res, next) => {
     throw new CustomError("Not authorized to access this route", 401);
   }
 });
+
+
+
+export const isAdmin = asyncHandler(async (req, _res, next) => {
+  if (req.user && req.user.role === 'ADMIN') {
+    next();
+  } else {
+    throw new CustomError("Not authorized to access this route", 401);
+  }
+});
