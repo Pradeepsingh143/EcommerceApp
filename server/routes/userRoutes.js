@@ -5,10 +5,10 @@ import {signUp, login, logout, forgotPassword, resetPassword, getProfile, change
 
 router.post("/signup", signUp);
 router.get("/login", login);
-router.get("/logout", logout);
+router.get("/logout", isLoggedIn, logout);
 router.post("/password/forgot", forgotPassword);
 router.put("/password/reset/:token", resetPassword);
-router.get("/profile", getProfile);
+router.get("/profile", isLoggedIn, getProfile);
 router.put("/password/change",isLoggedIn, changePassword)
 
 export default router
