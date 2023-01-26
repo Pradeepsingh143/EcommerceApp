@@ -2,10 +2,11 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import morgan from "morgan";
-import userRoutes from "./routes/userRoutes.js";
 import CustomError from "./utils/customError.js";
+import userRoutes from "./routes/userRoutes.js";
 import collectionRoutes from "./routes/collectionRoutes.js";
-import couponRoutes from "./routes/couponRoutes.js"
+import couponRoutes from "./routes/couponRoutes.js";
+import productRoutes from "./routes/productRoutes.js";
 
 const app = express();
 
@@ -28,6 +29,8 @@ app.use("/api/auth", userRoutes);
 app.use("/api/collection", collectionRoutes);
 // coupon routes
 app.use("/api/coupon", couponRoutes);
+// product routes
+app.use("/api/product", productRoutes);
 
 //handle custom error
 app.use((err, _req, res, next) => {
