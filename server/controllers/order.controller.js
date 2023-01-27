@@ -39,7 +39,13 @@ export const generateRazorpayId = asynHandler(async (req, res) => {
 
     //total amount and final amount
     const totalAmount = verifyProductDetails.reduce(
-      (total, product) => (total + (product.price * product.count === 0 ? 1 : product.count), 0)
+      (total, product, currentIndex) =>
+        total +
+        product.price *
+          (products[currentIndex].count === 0
+            ? 1
+            : products[currentIndex].count),
+      0
     );
 
     // coupon check - DB
