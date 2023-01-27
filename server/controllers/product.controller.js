@@ -138,7 +138,7 @@ export const addProduct = asyncHandler(async (req, res) => {
 
 // need to work in this controller
 export const updateProduct = asyncHandler(async (req, res) => {
-  const { id: productID } = req.params;
+  const { id: productId } = req.params;
 
   const form = formidable({
     multiples: true,
@@ -150,28 +150,47 @@ export const updateProduct = asyncHandler(async (req, res) => {
       if (err) {
         throw new CustomError(err.message || "something went wrong", 500);
       }
+      const product = await Product.findById(productId);
 
-      // handling images
-      let imageArrayResponse = Promise.all(
-        Object.keys(files).map(async (filekey, index) => {
-          const element = files[filekey];
+      if (!product) {
+        throw new CustomError("product not found", 500);
+      }
+     // // handling images
+     // // let imageArrayResponse = Promise.all(
+      //   Object.keys(files).map(async (filekey, index) => {
+      //     const element = files[filekey];
 
-          const data = fs.readFileSync(element.filepath);
+      //     const data = fs.readFileSync(element.filepath);
 
-          const upload = await s3FileUpload({
-            bucketName: config.S3_BUCKET_NAME,
-            key: `products/${productID}/photos_${index + 1}.png`,
-            body: data,
-            contentType: element.mimetype,
+      //     const upload = await s3FileUpload({
+      //       bucketName: config.S3_BUCKET_NAME,
+      //       key: `products/${productId}/photos_${index + 1}.png`,
+      //       body: data,
+      //       contentType: element.mimetype,
+      //     });
+      //     return {
+      //       secure_url: upload.Location,
+      //     };
+      //   })
+     // // );
+
+      const images = Promise.all(
+        Object.values(files).map(async (file) => {
+          const data = await cloudinaryFileUpload(file.filepath, {
+            folder: "EcommerceApp/products",
           });
-          return {
-            secure_url: upload.Location,
-          };
+          return data;
         })
       );
 
-      // create an imageArray variable and assign imageArrayResponse
-      const imageArray = await imageArrayResponse;
+      const imageData = await images;
+
+      const imageArray = imageData.map((data) => {
+        return{
+          secure_url: data.secure_url,
+          public_id: data.public_id,
+        }
+      });
 
       const updatedFields = {};
       Object.keys(fields).forEach((key) => {
@@ -180,11 +199,12 @@ export const updateProduct = asyncHandler(async (req, res) => {
         }
       });
 
+
       // create product in db
       const updatedProduct = await Product.findByIdAndUpdate(
-        productID,
+        productId,
         {
-          photos: imageArray,
+          photos: [...product.photos, ...imageArray],
           ...updatedFields,
         },
         { runValidators: false, new: true }
@@ -193,12 +213,17 @@ export const updateProduct = asyncHandler(async (req, res) => {
       // if product not created
       if (!updatedProduct) {
         // * if product got error while creating then delete all images from AWS s3 bucket
+        // // Promise.all(
+        //   imageArray.map(async (_file, index) => {
+        //     await s3DeleteFile({
+        //       bucketName: config.S3_BUCKET_NAME,
+        //       key: imageArray[index],
+        //     });
+        //   })
+        // // );
         Promise.all(
-          imageArray.map(async (_file, index) => {
-            await s3DeleteFile({
-              bucketName: config.S3_BUCKET_NAME,
-              key: imageArray[index],
-            });
+          imageData.map(async (file) => {
+            await cloudinaryFileDelete(file.public_id);
           })
         );
         throw new CustomError("product was not created", 400);
@@ -303,7 +328,7 @@ export const getProductByCollectionId = asyncHandler(async (req, res) => {
   const { id: collectionId } = req.params;
   const product = await Product.find({collectionId});
 
-  if (!product) {
+  if (product.length === 0) {
     throw new CustomError("Product not found", 404);
   }
 

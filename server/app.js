@@ -7,6 +7,7 @@ import userRoutes from "./routes/userRoutes.js";
 import collectionRoutes from "./routes/collectionRoutes.js";
 import couponRoutes from "./routes/couponRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
+import testRoutes from "./routes/testRoutes.js"
 
 const app = express();
 
@@ -43,5 +44,8 @@ app.use((err, _req, res, next) => {
     next(err);
   }
 });
+
+// testing route
+app.use("/api/test/", testRoutes);
 
 export default app;
