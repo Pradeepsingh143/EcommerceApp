@@ -5,7 +5,7 @@ import {
   deleteCollection,
   getAllCollections,
 } from "../controllers/collection.controller.js";
-import { isLoggedIn, isAdmin } from "../middlewares/auth.middleware";
+import { isLoggedIn, isAdmin } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
