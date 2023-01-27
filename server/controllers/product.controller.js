@@ -1,11 +1,15 @@
 import Product from "../models/product.schema.js";
 import formidable from "formidable";
 import fs from "fs";
-import { s3DeleteFile, s3FileUpload } from "../services/s3.files";
+// import { s3DeleteFile, s3FileUpload } from "../services/s3.files.js";
+import {
+  cloudinaryFileUpload,
+  cloudinaryFileDelete,
+} from "../services/cloudinary.files.js";
 import Mongoose from "mongoose";
 import asyncHandler from "../services/asyncHandler.js";
 import CustomError from "../utils/customError.js";
-import config from "../config.js";
+import config from "../config/index.js";
 
 /***********************************************************
  * @createProduct
@@ -40,27 +44,44 @@ export const addProduct = asyncHandler(async (req, res) => {
         throw new CustomError("please fill all details", 500);
       }
 
-      // handling images
-      let imageArrayResponse = Promise.all(
-        Object.keys(files).map(async (filekey, index) => {
-          const element = files[filekey];
+      //// ** handling upload in Aws.S3 bucket
+      // let imageArrayResponse = Promise.all(
+      //   Object.keys(files).map(async (filekey, index) => {
+      //     const element = files[filekey];
 
-          const data = fs.readFileSync(element.filepath);
+      //     const data = fs.readFileSync(element.filepath);
 
-          const upload = await s3FileUpload({
-            bucketName: config.S3_BUCKET_NAME,
-            key: `products/${productID}/photos_${index + 1}.png`,
-            body: data,
-            contentType: element.mimetype,
+      //     const upload = await s3FileUpload({
+      //       bucketName: config.S3_BUCKET_NAME,
+      //       key: `products/${productID}/photos_${index + 1}.png`,
+      //       body: data,
+      //       contentType: element.mimetype,
+      //     });
+      //     return {
+      //       secure_url: upload.Location,
+      //     };
+      //   })
+      // );
+      // const imageArray = await imageArrayResponse;
+
+      // image handle in cloudnairy
+      const images = Promise.all(
+        Object.values(files).map(async (file) => {
+          const data = await cloudinaryFileUpload(file.filepath, {
+            folder: "EcommerceApp/products",
           });
-          return {
-            secure_url: upload.Location,
-          };
+          return data;
         })
       );
 
-      // create an imageArray variable and assign imageArrayResponse
-      const imageArray = await imageArrayResponse;
+      const imageData = await images;
+
+      const imageArray = imageData.map((data) => {
+        return {
+          secure_url: data.secure_url,
+          public_id: data.public_id,
+        };
+      });
 
       // create product in db
       const product = await Product.create({
@@ -72,12 +93,20 @@ export const addProduct = asyncHandler(async (req, res) => {
       // if product not created
       if (!product) {
         // * if product got error while creating then delete all images from AWS s3 bucket
+        // delete file in AWS
+        // Promise.all(
+        //   imageArray.map(async (_file, index) => {
+        //     await s3DeleteFile({
+        //       bucketName: config.S3_BUCKET_NAME,
+        //       key: imageArray[index],
+        //     });
+        //   })
+        // );
+
+        // delete file in cloudinary
         Promise.all(
-          imageArray.map(async (_file, index) => {
-            await s3DeleteFile({
-              bucketName: config.S3_BUCKET_NAME,
-              key: imageArray[index],
-            });
+          imageData.map(async (file) => {
+            await cloudinaryFileDelete(file.public_id);
           })
         );
         throw new CustomError("product was not created", 400);
@@ -158,7 +187,7 @@ export const updateProduct = asyncHandler(async (req, res) => {
           photos: imageArray,
           ...updatedFields,
         },
-        {runValidators: false, new: true}
+        { runValidators: false, new: true }
       );
 
       // if product not created
@@ -209,7 +238,9 @@ export const deleteProduct = asyncHandler(async (req, res) => {
     throw new CustomError("Product not found", 400);
   }
 
-  product = undefined;
+  product.photos.map(async (data) => {
+    await cloudinaryFileDelete(data.public_id);
+  });
 
   res.status(200).json({
     success: true,
@@ -248,6 +279,29 @@ export const getAllProducts = asyncHandler(async (req, res) => {
 export const getProductById = asyncHandler(async (req, res) => {
   const { id: productId } = req.params;
   const product = await Product.findById(productId);
+
+  if (!product) {
+    throw new CustomError("Product not found", 404);
+  }
+
+  res.status(200).json({
+    success: true,
+    message: "all product fetched successfully",
+    product,
+  });
+});
+
+
+/***********************************************************
+ * @getProductsById
+ * @Route http://localhost:4000/api/product/collection/:id
+ * @description get all product list
+ * @parameter
+ * @returns success message, product object
+ ***********************************************************/
+export const getProductByCollectionId = asyncHandler(async (req, res) => {
+  const { id: collectionId } = req.params;
+  const product = await Product.find({collectionId});
 
   if (!product) {
     throw new CustomError("Product not found", 404);
