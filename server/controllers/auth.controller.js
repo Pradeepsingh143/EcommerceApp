@@ -4,6 +4,7 @@ import CustomError from "../utils/customError.js";
 import cookieOptions from "../utils/cookieOptions.js";
 import mailHelper from "../utils/mailHelper.js";
 import crypto from "crypto";
+import config from "../config/index.js";
 
 /***********************************************************
  * @SIGNUP
@@ -34,6 +35,10 @@ export const signUp = asyncHandler(async (req, res) => {
     password,
   });
 
+  if(!user){
+    throw new CustomError("!Failed, User not created", 400);
+  }
+
   const token = user.getJwtToken();
   user.password = undefined;
 
@@ -41,6 +46,7 @@ export const signUp = asyncHandler(async (req, res) => {
 
   return res.status(200).json({
     success: true,
+    message: "User registered successfully",
     token,
     user,
   });
@@ -75,6 +81,7 @@ export const login = asyncHandler(async (req, res) => {
     res.cookie("token", token, cookieOptions);
     return res.status(200).json({
       success: true,
+      message: "User Logged in successfully",
       token,
       user,
     });
@@ -120,9 +127,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   const resetToken = user.generateForgotPasswordToken();
   await user.save({ validateBeforeSave: false });
 
-  const resetUrl = `${req.protocol}://${req.header(
-    "host"
-  )}/api/auth/password/reset/${resetToken}`;
+  const resetUrl = `${config.CLIENT_SIDE_URL}/api/auth/password/reset/${resetToken}`;
 
   const mailMessage = `Reset your password \n\n Hi ${user.name}, \n We received your request to reset your ${req.hostname} account password.\n\n Please click the link below to reset it.\n\n
   ${resetUrl} \n\n This password reset link will expire at ${user.forgotPasswordExpiry.toLocaleString()}`;
@@ -143,7 +148,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
     user.forgotPasswordExpiry = undefined;
     await user.save({ validateBeforeSave: false });
     throw new CustomError(
-      `Mail Error: ${error.message}` || "Email send failed",
+      `Error: ${error.message}` || "Email send failed",
       400
     );
   }
