@@ -1,3 +1,3 @@
-# Frontend javascript Ecommerce app
+# Full stack mern Ecommerce app
 
-## This app is created for learning purpose as an internship with ineuron
+## This is create as an learning purpose
