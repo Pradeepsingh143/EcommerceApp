@@ -40,7 +40,14 @@ app.use((err, _req, res, next) => {
       message: err.message,
       code: err.code,
     });
-  } else {
+  } 
+  else if(err.name === 'ValidationError'){
+    res.status(400).json({
+      message: err.message,
+      code: err.status,
+    });
+  }
+  else {
     next(err);
   }
 });
