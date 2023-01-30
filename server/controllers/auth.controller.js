@@ -127,7 +127,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   const resetToken = user.generateForgotPasswordToken();
   await user.save({ validateBeforeSave: false });
 
-  const resetUrl = `${config.CLIENT_SIDE_URL}/api/auth/password/reset/${resetToken}`;
+  const resetUrl = `${config.CLIENT_SIDE_URL}/password/reset/${resetToken}`;
 
   const mailMessage = `Reset your password \n\n Hi ${user.name}, \n We received your request to reset your ${req.hostname} account password.\n\n Please click the link below to reset it.\n\n
   ${resetUrl} \n\n This password reset link will expire at ${user.forgotPasswordExpiry.toLocaleString()}`;

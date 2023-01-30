@@ -29,10 +29,11 @@ export const isLoggedIn = asyncHandler(async (req, _res, next) => {
 
 
 
-export const isAdmin = asyncHandler(async (req, _res, next) => {
-  if (req.user && req.user.role === 'ADMIN') {
+export const authorize = (role)=> asyncHandler(async (req, _res, next) => {
+  const roleArray = role.map(role=>role.trim().toUpperCase());
+  if (roleArray.includes(req.user.role)) {
     next();
-  } else {
+  }else{
     throw new CustomError("Not authorized to access this route", 401);
   }
 });
