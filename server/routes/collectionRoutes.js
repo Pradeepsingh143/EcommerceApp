@@ -9,9 +9,9 @@ import { isLoggedIn, authorize } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
-router.post("/create", isLoggedIn, authorize('ADMIN'), createCollection);
-router.put("/update/:id", isLoggedIn, authorize('ADMIN'), updateCollection);
-router.delete("/delete/:id", isLoggedIn, authorize('ADMIN'), deleteCollection);
+router.post("/create", isLoggedIn, authorize(['ADMIN']), createCollection);
+router.put("/update/:id", isLoggedIn, authorize(['ADMIN']), updateCollection);
+router.delete("/delete/:id", isLoggedIn, authorize(['ADMIN']), deleteCollection);
 router.get("/get", getAllCollections);
 
 export default router;
