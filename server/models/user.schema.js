@@ -32,6 +32,7 @@ const userSchema = Schema(
       enum: Object.values(AuthRoles),
       default: AuthRoles.USER,
     },
+    refreshToken: String,
     forgotPasswordToken: String,
     forgotPasswordExpiry: Date,
   },
@@ -55,7 +56,7 @@ userSchema.methods = {
   },
 
   // generate jwt token
-  getJwtToken: function () {
+  getJwtToken: function (JWT_EXPIRY) {
     return JWT.sign(
       {
         _id: this._id,
@@ -63,7 +64,7 @@ userSchema.methods = {
       },
       config.JWT_SECRET,
       {
-        expiresIn: config.JWT_EXPIRY,
+        expiresIn: JWT_EXPIRY,
       }
     );
   },

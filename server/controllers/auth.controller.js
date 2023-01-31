@@ -5,6 +5,7 @@ import cookieOptions from "../config/cookieOptions.js";
 import mailHelper from "../utils/mailHelper.js";
 import crypto from "crypto";
 import config from "../config/index.js";
+import JWT from "jsonwebtoken";
 
 /***********************************************************
  * @SIGNUP
@@ -35,7 +36,7 @@ export const signUp = asyncHandler(async (req, res) => {
     password,
   });
 
-  if(!user){
+  if (!user) {
     throw new CustomError("!Failed, User not created", 400);
   }
 
@@ -76,18 +77,93 @@ export const login = asyncHandler(async (req, res) => {
   const isPasswordMatched = await user.comparePassword(password);
 
   if (isPasswordMatched) {
-    const token = user.getJwtToken();
-    user.password = undefined;
-    res.cookie("token", token, cookieOptions);
-    return res.status(200).json({
-      success: true,
-      message: "User Logged in successfully",
-      token,
-      user,
-    });
+    try {
+      // refresh token for short period ex. 10min
+      const accessToken = await user.getJwtToken(config.JWT_ACCESS_TOKEN_EXPIRY);
+      // access token for long time ex. 2day
+      const refreshToken = await user.getJwtToken(
+        config.JWT_REFRESH_TOKEN_EXPIRY
+      );
+      user.refreshToken = refreshToken;
+      await user.save();
+      user.password = undefined;
+      res.cookie("token", refreshToken, cookieOptions);
+      return res.status(200).json({
+        success: true,
+        message: "User Logged in successfully",
+        accessToken,
+        user,
+      });
+    } catch (error) {
+      throw new CustomError(`Something went wrong: ${error?.message}`, 400);
+    }
   }
   throw new CustomError("Invaild credentials", 400);
 });
+
+
+/***********************************************************
+ * @REFRESH_TOKEN
+ * @Route http://localhost:4000/api/auth/refresh
+ * @description generate new accesstoken using refresh token
+ * @parameter token from cookies
+ * @returns accesstoken
+ ***********************************************************/
+export const refreshToken = asyncHandler(async (req, res) => {
+  let refreshToken;
+  if (
+    req.cookies.token ||
+    (req.header.authorization && req.header.authorization.startsWith("Bearer")) ||
+    (req.header.Authorization && req.header.Authorization.startsWith("Bearer"))
+  ) {
+    refreshToken = req.cookies.token || req.header.authorization.split(" ")[1] || req.header.Authorization.split(" ")[1];
+  }
+
+  if (!refreshToken) {
+    return res.sendStatus(404); //No content
+  }
+  console.log("refreshToken: ", refreshToken);
+
+  // Is refreshToken in db?
+  const user = await User.findOne({ refreshToken }, "_id role email");
+  console.log("user: ", user);
+
+  if (!user) {
+    res.clearCookie("token", cookieOptions);
+    return res.status(200).json({
+      success: false,
+      message: "token invalid",
+    });
+  }
+
+  let decodedJwtToken = JWT.verify(refreshToken, config.JWT_SECRET);
+  console.log("decodedJwtToken: ", decodedJwtToken);
+
+
+  if (!decodedJwtToken && decodedJwtToken?._id !== user?._id) {
+    return res.status(200).json({
+      success: false,
+      message: "token invalid",
+    });
+  }
+
+  decodedJwtToken = undefined;
+  refreshToken = undefined;
+ 
+  // generate access token
+  const accessToken = await user.getJwtToken(config.JWT_ACCESS_TOKEN_EXPIRY);
+  console.log("generated accessToken: ", accessToken);
+
+  if(!accessToken) return res.sendStatus(404);
+  res.status(200).json({
+    success: true,
+    message: "access token generated",
+    accessToken,
+    role: user.role
+  });
+});
+
+
 
 /***********************************************************
  * @LOGOUT
@@ -97,13 +173,23 @@ export const login = asyncHandler(async (req, res) => {
  * @returns success message
  ***********************************************************/
 
-export const logout = asyncHandler(async (_req, res) => {
+export const logout = asyncHandler(async (req, res) => {
+  const cookies = req.cookies;
+  if (!cookies?.token) {
+    return res.sendStatus(204); //No content
+  }
+  const refreshToken = cookies.token;
+  // Is refreshToken in db?
+  const user = await User.findOne({ refreshToken }).exec();
+  if (!user) {
+    res.clearCookie("token", cookieOptions);
+    return res.sendStatus(204);
+  }
+
+  // Delete refreshToken in db
+  user.refreshToken = "";
+  await user.save();
   res.clearCookie("token");
-  // * you can also use
-  // res.cookie("token", null, {
-  //   expires: new Date(Date.now()),
-  //   httpOnly: true,
-  // });
   res.status(200).json({
     success: true,
     message: "logged out",
@@ -129,7 +215,11 @@ export const forgotPassword = asyncHandler(async (req, res) => {
 
   const resetUrl = `${config.CLIENT_SIDE_URL}/password/reset/${resetToken}`;
 
-  const mailMessage = `Reset your password \n\n Hi ${user.name}, \n We received your request to reset your ${req.hostname} account password.\n\n Please click the link below to reset it.\n\n
+  const mailMessage = `Reset your password \n\n Hi ${
+    user.name
+  }, \n We received your request to reset your ${
+    req.hostname
+  } account password.\n\n Please click the link below to reset it.\n\n
   ${resetUrl} \n\n This password reset link will expire at ${user.forgotPasswordExpiry.toLocaleString()}`;
 
   try {
