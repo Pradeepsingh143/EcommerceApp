@@ -9,9 +9,10 @@ export const isLoggedIn = asyncHandler(async (req, _res, next) => {
 
   if (
     req.cookies.token ||
-    (req.header.authorization && req.header.authorization.startsWith("Bearer"))
+    (req.header.authorization && req.header.authorization.startsWith("Bearer")) ||
+    (req.header.Authorization && req.header.Authorization.startsWith("Bearer"))
   ) {
-    token = req.cookies.token || req.header.authorization.split(" ")[1];
+    token = req.cookies.token || req.header.authorization.split(" ")[1] || req.header.Authorization.split(" ")[1];
   }
 
   if (!token) {
@@ -30,7 +31,7 @@ export const isLoggedIn = asyncHandler(async (req, _res, next) => {
 
 
 export const authorize = (role)=> asyncHandler(async (req, _res, next) => {
-  const roleArray = role.map(role=>role.trim().toUpperCase());
+  const roleArray =[...role].map(role=>role.trim().toUpperCase());
   if (roleArray.includes(req.user.role)) {
     next();
   }else{
