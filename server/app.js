@@ -9,13 +9,14 @@ import collectionRoutes from "./routes/collectionRoutes.js";
 import couponRoutes from "./routes/couponRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import testRoutes from "./routes/testRoutes.js";
+import corsOptions from "./config/corsOptions.js";
 const __dirname = path.resolve();
 
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(cookieParser());
 
 // morgan logger
