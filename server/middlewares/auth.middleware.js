@@ -24,7 +24,7 @@ export const isLoggedIn = asyncHandler(async (req, _res, next) => {
     req.user = await User.findById(decodedJwtToken._id, "name email role");
     next();
   } catch (error) {
-    throw new CustomError("Not authorized to access this route", 401);
+    throw new CustomError("Token expired or invalid", 401);
   }
 });
 

@@ -79,7 +79,9 @@ export const login = asyncHandler(async (req, res) => {
   if (isPasswordMatched) {
     try {
       // refresh token for short period ex. 10min
-      const accessToken = await user.getJwtToken(config.JWT_ACCESS_TOKEN_EXPIRY);
+      const accessToken = await user.getJwtToken(
+        config.JWT_ACCESS_TOKEN_EXPIRY
+      );
       // access token for long time ex. 2day
       const refreshToken = await user.getJwtToken(
         config.JWT_REFRESH_TOKEN_EXPIRY
@@ -101,7 +103,6 @@ export const login = asyncHandler(async (req, res) => {
   throw new CustomError("Invaild credentials", 400);
 });
 
-
 /***********************************************************
  * @REFRESH_TOKEN
  * @Route http://localhost:4000/api/auth/refresh
@@ -113,20 +114,22 @@ export const refreshToken = asyncHandler(async (req, res) => {
   let refreshToken;
   if (
     req.cookies.token ||
-    (req.header.authorization && req.header.authorization.startsWith("Bearer")) ||
+    (req.header.authorization &&
+      req.header.authorization.startsWith("Bearer")) ||
     (req.header.Authorization && req.header.Authorization.startsWith("Bearer"))
   ) {
-    refreshToken = req.cookies.token || req.header.authorization.split(" ")[1] || req.header.Authorization.split(" ")[1];
+    refreshToken =
+      req.cookies.token ||
+      req.header.authorization.split(" ")[1] ||
+      req.header.Authorization.split(" ")[1];
   }
 
   if (!refreshToken) {
     return res.sendStatus(404); //No content
   }
-  console.log("refreshToken: ", refreshToken);
 
   // Is refreshToken in db?
   const user = await User.findOne({ refreshToken }, "_id role email");
-  console.log("user: ", user);
 
   if (!user) {
     res.clearCookie("token", cookieOptions);
@@ -137,8 +140,6 @@ export const refreshToken = asyncHandler(async (req, res) => {
   }
 
   let decodedJwtToken = JWT.verify(refreshToken, config.JWT_SECRET);
-  console.log("decodedJwtToken: ", decodedJwtToken);
-
 
   if (!decodedJwtToken && decodedJwtToken?._id !== user?._id) {
     return res.status(200).json({
@@ -149,21 +150,18 @@ export const refreshToken = asyncHandler(async (req, res) => {
 
   decodedJwtToken = undefined;
   refreshToken = undefined;
- 
+
   // generate access token
   const accessToken = await user.getJwtToken(config.JWT_ACCESS_TOKEN_EXPIRY);
-  console.log("generated accessToken: ", accessToken);
 
-  if(!accessToken) return res.sendStatus(404);
+  if (!accessToken) return res.sendStatus(404);
   res.status(200).json({
     success: true,
     message: "access token generated",
     accessToken,
-    role: user.role
+    role: user.role,
   });
 });
-
-
 
 /***********************************************************
  * @LOGOUT
