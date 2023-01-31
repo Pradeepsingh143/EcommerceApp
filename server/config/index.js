@@ -5,7 +5,8 @@ const config = {
   CURRENCY: process.env.CURRENCY || "INR",
 
   JWT_SECRET: process.env.JWT_SECRET || "badSecret",
-  JWT_EXPIRY: process.env.JWT_EXPIRY || "10d",
+  JWT_ACCESS_TOKEN_EXPIRY: process.env.JWT_ACCESS_TOKEN_EXPIRY,
+  JWT_REFRESH_TOKEN_EXPIRY: process.env.JWT_REFRESH_TOKEN_EXPIRY,
   MONGODB_URL: process.env.MONGODB_URL || "mongodb://localHost",
   PORT: process.env.PORT || 4000,
 
