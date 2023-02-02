@@ -10,12 +10,14 @@ import couponRoutes from "./routes/couponRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import testRoutes from "./routes/testRoutes.js";
 import corsOptions from "./config/corsOptions.js";
+import credentials from "./middlewares/credentials.js"
 const __dirname = path.resolve();
 
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(credentials);
 app.use(cors(corsOptions));
 app.use(cookieParser());
 

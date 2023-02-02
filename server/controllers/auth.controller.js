@@ -68,7 +68,7 @@ export const login = asyncHandler(async (req, res) => {
     throw new CustomError("All fields are required", 400);
   }
 
-  const user = await User.findOne({ email }).select("+password");
+  const user = await User.findOne({ email }, "_id name role password email");
 
   if (!user) {
     throw new CustomError("Invaild credentials", 400);
@@ -88,8 +88,9 @@ export const login = asyncHandler(async (req, res) => {
       );
       user.refreshToken = refreshToken;
       await user.save();
-      user.password = undefined;
       res.cookie("token", refreshToken, cookieOptions);
+      user.password = undefined;
+      user.refreshToken = undefined;
       return res.status(200).json({
         success: true,
         message: "User Logged in successfully",
