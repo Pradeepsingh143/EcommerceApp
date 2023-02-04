@@ -40,15 +40,19 @@ export const signUp = asyncHandler(async (req, res) => {
     throw new CustomError("!Failed, User not created", 400);
   }
 
-  const token = user.getJwtToken();
+  // const JwtToken = await user.getJwtToken('1d');
+
+  // if (!JwtToken) {
+  //   throw new CustomError("!Jwt failed to generate token", 400);
+  // }
+
   user.password = undefined;
 
-  res.cookie("token", token, cookieOptions);
+  // res.cookie("JwtToken", JwtToken, cookieOptions);
 
   return res.status(200).json({
     success: true,
     message: "User registered successfully",
-    token,
     user,
   });
 });
@@ -86,11 +90,11 @@ export const login = asyncHandler(async (req, res) => {
       const refreshToken = await user.getJwtToken(
         config.JWT_REFRESH_TOKEN_EXPIRY
       );
+      console.log('refreshtoken: ',refreshToken);
       user.refreshToken = refreshToken;
-      await user.save();
-      res.cookie("token", refreshToken, cookieOptions);
+      await user.save({validateBeforeSave:false});
+      res.cookie("JwtToken", refreshToken, cookieOptions);
       user.password = undefined;
-      user.refreshToken = undefined;
       return res.status(200).json({
         success: true,
         message: "User Logged in successfully",
@@ -112,29 +116,17 @@ export const login = asyncHandler(async (req, res) => {
  * @returns accesstoken
  ***********************************************************/
 export const refreshToken = asyncHandler(async (req, res) => {
-  let refreshToken;
-  if (
-    req.cookies.token ||
-    (req.header.authorization &&
-      req.header.authorization.startsWith("Bearer")) ||
-    (req.header.Authorization && req.header.Authorization.startsWith("Bearer"))
-  ) {
-    refreshToken =
-      req.cookies.token ||
-      req.header.authorization.split(" ")[1] ||
-      req.header.Authorization.split(" ")[1];
-  }
-
-  if (!refreshToken) {
-    return res.sendStatus(404); //No content
-  }
-
+  const cookies = req.cookies;
+  console.log("cookies: ", cookies);
+  if (!cookies?.JwtToken) return res.sendStatus(401);
+  const refreshToken = cookies.JwtToken;
+  console.log("RefreshToken: ", refreshToken);
   // Is refreshToken in db?
   const user = await User.findOne({ refreshToken }, "_id role email");
-
+  console.log("user", user);
   if (!user) {
-    res.clearCookie("token", cookieOptions);
-    return res.status(200).json({
+    res.clearCookie("JwtToken", cookieOptions);
+    return res.status(405).json({
       success: false,
       message: "token invalid",
     });
@@ -143,19 +135,16 @@ export const refreshToken = asyncHandler(async (req, res) => {
   let decodedJwtToken = JWT.verify(refreshToken, config.JWT_SECRET);
 
   if (!decodedJwtToken && decodedJwtToken?._id !== user?._id) {
-    return res.status(200).json({
+    return res.status(403).json({
       success: false,
       message: "token invalid",
     });
   }
 
-  decodedJwtToken = undefined;
-  refreshToken = undefined;
-
   // generate access token
   const accessToken = await user.getJwtToken(config.JWT_ACCESS_TOKEN_EXPIRY);
 
-  if (!accessToken) return res.sendStatus(404);
+  if (!accessToken) return res.sendStatus(407);
   res.status(200).json({
     success: true,
     message: "access token generated",
@@ -174,21 +163,21 @@ export const refreshToken = asyncHandler(async (req, res) => {
 
 export const logout = asyncHandler(async (req, res) => {
   const cookies = req.cookies;
-  if (!cookies?.token) {
+  if (!cookies?.JwtToken) {
     return res.sendStatus(204); //No content
   }
-  const refreshToken = cookies.token;
+  const refreshToken = cookies.JwtToken;
   // Is refreshToken in db?
   const user = await User.findOne({ refreshToken }).exec();
   if (!user) {
-    res.clearCookie("token", cookieOptions);
+    res.clearCookie("JwtToken", cookieOptions);
     return res.sendStatus(204);
   }
 
   // Delete refreshToken in db
   user.refreshToken = "";
   await user.save();
-  res.clearCookie("token");
+  res.clearCookie("JwtToken");
   res.status(200).json({
     success: true,
     message: "logged out",

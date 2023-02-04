@@ -5,22 +5,22 @@ import config from "../config/index.js";
 import asyncHandler from "../services/asyncHandler.js";
 
 export const isLoggedIn = asyncHandler(async (req, _res, next) => {
-  let token;
+  let JwtToken;
 
   if (
-    req.cookies.token ||
-    (req.header.authorization && req.header.authorization.startsWith("Bearer")) ||
-    (req.header.Authorization && req.header.Authorization.startsWith("Bearer"))
+    req.cookies?.JwtToken ||
+    req.headers?.authorization ||
+    req.headers?.Authorization
   ) {
-    token = req.cookies.token || req.header.authorization.split(" ")[1] || req.header.Authorization.split(" ")[1];
+    JwtToken = req.cookies?.JwtToken || req.headers?.authorization.split(" ")[1] || req.headers?.Authorization.split(" ")[1];
   }
 
-  if (!token) {
-    throw new CustomError("Not authorized to access this route", 401);
+  if (!JwtToken) {
+    throw new CustomError("Not authorized to access this route please login first", 401);
   }
 
   try {
-    const decodedJwtToken = JWT.verify(token, config.JWT_SECRET);
+    const decodedJwtToken = JWT.verify(JwtToken, config.JWT_SECRET);
     req.user = await User.findById(decodedJwtToken._id, "name email role");
     next();
   } catch (error) {
