@@ -64,9 +64,16 @@ export const addProduct = asyncHandler(async (req, res) => {
       // );
       // const imageArray = await imageArrayResponse;
 
-      // image handle in cloudnairy
+      let fileArray; 
+
+      if(!Array.isArray(files.productFiles)){
+        fileArray = [files.productFiles];
+      }else{
+        fileArray = files.productFiles;
+      }
+
       const images = Promise.all(
-        Object.values(files).map(async (file) => {
+        fileArray.map(async (file, i) => {
           const data = await cloudinaryFileUpload(file.filepath, {
             folder: "EcommerceApp/products",
           });
@@ -226,13 +233,13 @@ export const updateProduct = asyncHandler(async (req, res) => {
             await cloudinaryFileDelete(file.public_id);
           })
         );
-        throw new CustomError("product was not created", 400);
+        throw new CustomError("product was not updated", 400);
       }
 
       //  back response
       res.status(200).json({
         success: true,
-        message: "product was create successfully",
+        message: "product updated successfully",
         updatedProduct,
       });
     } catch (error) {
@@ -281,7 +288,7 @@ export const deleteProduct = asyncHandler(async (req, res) => {
  * @returns success message, product object
  ***********************************************************/
 export const getAllProducts = asyncHandler(async (req, res) => {
-  const products = await Product.find({});
+  const products = await Product.find({}).populate("collectionId", "name");
 
   if (!products) {
     throw new CustomError("No product found", 404);

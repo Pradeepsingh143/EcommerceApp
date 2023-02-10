@@ -18,6 +18,10 @@ const productSchema = Schema(
       type: String,
       // use editor form to design product description
     },
+    shortDescription: {
+      type: String,
+      // use editor form to design product description
+    },
     photos: [
       {
         secure_url: {
