@@ -122,8 +122,7 @@ export const refreshToken = asyncHandler(async (req, res) => {
   const refreshToken = cookies.JwtToken;
   console.log("RefreshToken: ", refreshToken);
   // Is refreshToken in db?
-  const user = await User.findOne({ refreshToken }, "_id role email");
-  console.log("user", user);
+  const user = await User.findOne({ refreshToken }, "_id role email name");
   if (!user) {
     res.clearCookie("JwtToken", cookieOptions);
     return res.status(405).json({
@@ -150,6 +149,7 @@ export const refreshToken = asyncHandler(async (req, res) => {
     message: "access token generated",
     accessToken,
     role: user.role,
+    user
   });
 });
 
