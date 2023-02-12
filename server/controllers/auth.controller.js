@@ -289,7 +289,7 @@ export const resetPassword = asyncHandler(async (req, res) => {
  * @returns user object
  ***********************************************************/
 export const getProfile = asyncHandler(async (req, res) => {
-  const user = await User.find({}).select("name email role");
+  const user = await User.find({}).select("name email role createdAt");
   if (!user) {
     throw new CustomError("User not found", 404);
   }
