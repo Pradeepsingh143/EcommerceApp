@@ -8,7 +8,7 @@ import userRoutes from "./routes/userRoutes.js";
 import collectionRoutes from "./routes/collectionRoutes.js";
 import couponRoutes from "./routes/couponRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
-import testRoutes from "./routes/testRoutes.js";
+// import testRoutes from "./routes/testRoutes.js";
 import corsOptions from "./config/corsOptions.js";
 import credentials from "./middlewares/credentials.js"
 const __dirname = path.resolve();
@@ -75,6 +75,6 @@ app.use((err, _req, res, next) => {
 });
 
 // testing route
-app.use("/api/test/", testRoutes);
+// app.use("/api/test/", testRoutes);
 
 export default app;
