@@ -71,6 +71,41 @@ export const deactivateCoupon = asyncHandler(async (req, res) => {
   });
 });
 
+
+/**********************************************************
+ * @ACTIVATE_COUPON
+ * @route https://localhost:5000/api/coupon/activate/:id
+ * @description Controller used for activating the coupon
+ * @description Only admin and Moderator can update the coupon
+ * @returns Coupon Object with success message "Coupon activated SuccessFully"
+ *********************************************************/
+export const activateCoupon = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  if (!id) {
+    throw new CustomError("coupon id is required", 400);
+  }
+
+  // upade isActive status to false and runvalidator
+  let coupon = await Coupon.findByIdAndUpdate(
+    id,
+    { isActive: true },
+    { runValidators: false }
+  );
+
+  if (!coupon) {
+    throw new CustomError("Coupon not found", 400);
+  }
+
+  coupon = undefined
+
+  res.status(200).json({
+    success: true,
+    message: "coupon activated successfully",
+  });
+});
+
+
 /**********************************************************
  * @DELETE_COUPON
  * @route https://localhost:5000/api/coupon/delete:id
