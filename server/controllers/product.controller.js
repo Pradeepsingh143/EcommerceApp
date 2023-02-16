@@ -7,6 +7,7 @@ import {
 import Mongoose from "mongoose";
 import asyncHandler from "../services/asyncHandler.js";
 import CustomError from "../utils/customError.js";
+import sanitizeHtml from "sanitize-html";
 // import { s3DeleteFile, s3FileUpload } from "../services/s3.files.js";
 // import config from "../config/index.js";
 // import fs from "fs";
@@ -64,17 +65,31 @@ export const addProduct = asyncHandler(async (req, res) => {
       // );
       // const imageArray = await imageArrayResponse;
 
-      let fileArray; 
+      // product preview image
+      const productPreviewImage = await cloudinaryFileUpload(
+        files.productPreviewImage.filepath,
+        {
+          folder: "EcommerceApp/products",
+        }
+      );
 
-      if(!Array.isArray(files.productFiles)){
+      const previewImage = {
+        secure_url: productPreviewImage.secure_url,
+        public_id: productPreviewImage.public_id,
+      };
+
+      // product gallery image
+      let fileArray;
+
+      if (!Array.isArray(files?.productFiles)) {
         fileArray = [files.productFiles];
-      }else{
-        fileArray = files.productFiles;
+      } else {
+        fileArray = files?.productFiles;
       }
 
       const images = Promise.all(
         fileArray.map(async (file, i) => {
-          const data = await cloudinaryFileUpload(file.filepath, {
+          const data = await cloudinaryFileUpload(file?.filepath, {
             folder: "EcommerceApp/products",
           });
           return data;
@@ -85,16 +100,22 @@ export const addProduct = asyncHandler(async (req, res) => {
 
       const imageArray = imageData.map((data) => {
         return {
-          secure_url: data.secure_url,
-          public_id: data.public_id,
+          secure_url: data?.secure_url,
+          public_id: data?.public_id,
         };
+      });
+
+      const sanitizeDescription = sanitizeHtml(fields.description, {
+        allowedIframeDomains: ["www.youtube.com"],
       });
 
       // create product in db
       const product = await Product.create({
         _id: productID,
         photos: imageArray,
+        previewImage: previewImage,
         ...fields,
+        description: sanitizeDescription,
       });
 
       // if product not created
@@ -111,6 +132,8 @@ export const addProduct = asyncHandler(async (req, res) => {
         // );
 
         // delete file in cloudinary
+        await cloudinaryFileDelete(previewImage.public_id);
+
         Promise.all(
           imageData.map(async (file) => {
             await cloudinaryFileDelete(file.public_id);
@@ -162,8 +185,8 @@ export const updateProduct = asyncHandler(async (req, res) => {
       if (!product) {
         throw new CustomError("product not found", 500);
       }
-     // // handling images
-     // // let imageArrayResponse = Promise.all(
+      // // handling images
+      // // let imageArrayResponse = Promise.all(
       //   Object.keys(files).map(async (filekey, index) => {
       //     const element = files[filekey];
 
@@ -179,10 +202,22 @@ export const updateProduct = asyncHandler(async (req, res) => {
       //       secure_url: upload.Location,
       //     };
       //   })
-     // // );
+      // // );
+      // product preview image
+      const productPreviewImage = await cloudinaryFileUpload(
+        files?.productPreviewImage.filepath,
+        {
+          folder: "EcommerceApp/products",
+        }
+      );
+
+      const previewImage = {
+        secure_url: productPreviewImage?.secure_url,
+        public_id: productPreviewImage?.public_id,
+      };
 
       const images = Promise.all(
-        Object.values(files).map(async (file) => {
+        Object.values(files?.productFiles).map(async (file) => {
           const data = await cloudinaryFileUpload(file.filepath, {
             folder: "EcommerceApp/products",
           });
@@ -192,11 +227,11 @@ export const updateProduct = asyncHandler(async (req, res) => {
 
       const imageData = await images;
 
-      const imageArray = imageData.map((data) => {
-        return{
+      const imageArray = imageData?.map((data) => {
+        return {
           secure_url: data.secure_url,
           public_id: data.public_id,
-        }
+        };
       });
 
       const updatedFields = {};
@@ -206,6 +241,82 @@ export const updateProduct = asyncHandler(async (req, res) => {
         }
       });
 
+      const sanitizeDescription = await sanitizeHtml(fields?.description, {
+        allowedIframeDomains: ["www.youtube.com"],
+        allowedTags: [
+          "address",
+          "article",
+          "aside",
+          "footer",
+          "header",
+          "h1",
+          "h2",
+          "h3",
+          "h4",
+          "h5",
+          "h6",
+          "hgroup",
+          "main",
+          "nav",
+          "section",
+          "blockquote",
+          "dd",
+          "div",
+          "dl",
+          "dt",
+          "figcaption",
+          "figure",
+          "hr",
+          "li",
+          "main",
+          "ol",
+          "p",
+          "pre",
+          "ul",
+          "a",
+          "abbr",
+          "b",
+          "bdi",
+          "bdo",
+          "br",
+          "cite",
+          "code",
+          "data",
+          "dfn",
+          "em",
+          "i",
+          "kbd",
+          "mark",
+          "q",
+          "rb",
+          "rp",
+          "rt",
+          "rtc",
+          "ruby",
+          "s",
+          "samp",
+          "small",
+          "span",
+          "strong",
+          "sub",
+          "sup",
+          "time",
+          "u",
+          "var",
+          "wbr",
+          "caption",
+          "col",
+          "colgroup",
+          "table",
+          "tbody",
+          "td",
+          "tfoot",
+          "th",
+          "thead",
+          "tr",
+        ],
+        disallowedTagsMode: ["script"],
+      });
 
       // create product in db
       const updatedProduct = await Product.findByIdAndUpdate(
@@ -213,6 +324,8 @@ export const updateProduct = asyncHandler(async (req, res) => {
         {
           photos: [...product.photos, ...imageArray],
           ...updatedFields,
+          description: sanitizeDescription,
+          previewImage: previewImage,
         },
         { runValidators: false, new: true }
       );
@@ -228,6 +341,7 @@ export const updateProduct = asyncHandler(async (req, res) => {
         //     });
         //   })
         // // );
+        await cloudinaryFileDelete(previewImage.public_id);
         Promise.all(
           imageData.map(async (file) => {
             await cloudinaryFileDelete(file.public_id);
@@ -323,7 +437,6 @@ export const getProductById = asyncHandler(async (req, res) => {
   });
 });
 
-
 /***********************************************************
  * @getProductsById
  * @Route http://localhost:4000/api/product/collection/:id
@@ -333,7 +446,7 @@ export const getProductById = asyncHandler(async (req, res) => {
  ***********************************************************/
 export const getProductByCollectionId = asyncHandler(async (req, res) => {
   const { id: collectionId } = req.params;
-  const product = await Product.find({collectionId});
+  const product = await Product.find({ collectionId });
 
   if (product.length === 0) {
     throw new CustomError("Product not found", 404);

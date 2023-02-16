@@ -22,6 +22,16 @@ const productSchema = Schema(
       type: String,
       // use editor form to design product description
     },
+    previewImage: {
+      secure_url: {
+        type: String,
+        required: true,
+      },  
+      public_id: {
+        type: String,
+        required: true,
+      },
+    }, 
     photos: [
       {
         secure_url: {
