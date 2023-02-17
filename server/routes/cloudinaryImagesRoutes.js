@@ -5,8 +5,8 @@ import { isLoggedIn, authorize } from "../middlewares/auth.middleware.js";
 const router = express.Router();
 
 router.get("/get", isLoggedIn, authorize(['ADMIN']), getAllImages);
-router.get("/post", isLoggedIn, authorize(['ADMIN']), uploadImage);
-router.get("/delete/:id", isLoggedIn, authorize(['ADMIN']), deleteImage);
+router.post("/post", isLoggedIn, authorize(['ADMIN']), uploadImage);
+router.delete("/delete", isLoggedIn, authorize(['ADMIN']), deleteImage);
 
 
 export default router;

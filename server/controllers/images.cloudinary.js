@@ -12,6 +12,7 @@ export const getAllImages = asyncHandler(async (req, res) => {
     const result = await cloudinaryResources({
       width: 250,
       height: 250,
+      max_results: 100
     });
     const resources = result.resources.map(resource => {
         resource.resized_url = cloudinary.url(resource.public_id, { width: 250, height: 250 });
@@ -30,7 +31,8 @@ export const getAllImages = asyncHandler(async (req, res) => {
 
 export const deleteImage = asyncHandler(async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.query;
+    console.log("delete id:", id);
     await cloudinaryFileDelete(id);
     res.status(200).json({
       success: true,
