@@ -4,13 +4,16 @@ import cors from "cors";
 import morgan from "morgan";
 import path from "path";
 import CustomError from "./utils/customError.js";
+// import testRoutes from "./routes/testRoutes.js";
+import corsOptions from "./config/corsOptions.js";
+import credentials from "./middlewares/credentials.js";
+
+// routes
 import userRoutes from "./routes/userRoutes.js";
 import collectionRoutes from "./routes/collectionRoutes.js";
 import couponRoutes from "./routes/couponRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
-// import testRoutes from "./routes/testRoutes.js";
-import corsOptions from "./config/corsOptions.js";
-import credentials from "./middlewares/credentials.js"
+import cloudinaryImagesRoutes from "./routes/cloudinaryImagesRoutes.js";
 const __dirname = path.resolve();
 
 const app = express();
@@ -26,7 +29,7 @@ app.use(morgan("tiny"));
 
 //serve static files
 
-app.use('/', express.static(path.join(__dirname, '/public')));
+app.use("/", express.static(path.join(__dirname, "/public")));
 
 // home route
 app.get("/", (_req, res) => {
@@ -41,19 +44,20 @@ app.use("/api/collection", collectionRoutes);
 app.use("/api/coupon", couponRoutes);
 // product routes
 app.use("/api/product", productRoutes);
+// cloudinary routes from images
+app.use("/cloudinary", cloudinaryImagesRoutes);
 
 // unknown routes or 404
 app.use((req, res) => {
-    res.status(404);
-    if (req.accepts('html')) {
-        res.sendFile(path.join(__dirname, 'views', '404.html'));
-    } else if (req.accepts('json')) {
-        res.json({ "error": "404 Not Found" });
-    } else {
-        res.type('txt').send("404 Not Found");
-    }
+  res.status(404);
+  if (req.accepts("html")) {
+    res.sendFile(path.join(__dirname, "views", "404.html"));
+  } else if (req.accepts("json")) {
+    res.json({ error: "404 Not Found" });
+  } else {
+    res.type("txt").send("404 Not Found");
+  }
 });
-
 
 //handle custom error
 app.use((err, _req, res, next) => {
@@ -62,14 +66,12 @@ app.use((err, _req, res, next) => {
       message: err.message,
       code: err.code,
     });
-  } 
-  else if(err.name === 'ValidationError'){
+  } else if (err.name === "ValidationError") {
     res.status(400).json({
       message: err.message,
       code: err.status,
     });
-  }
-  else {
+  } else {
     next(err);
   }
 });
