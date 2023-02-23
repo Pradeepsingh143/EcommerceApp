@@ -402,7 +402,7 @@ export const deleteProduct = asyncHandler(async (req, res) => {
  * @returns success message, product object
  ***********************************************************/
 export const getAllProducts = asyncHandler(async (req, res) => {
-  const products = await Product.find({}).populate("collectionId", "name");
+  const products = await Product.find({}, "_id name stock previewImage price").populate("collectionId", "name");
 
   if (!products) {
     throw new CustomError("No product found", 404);
