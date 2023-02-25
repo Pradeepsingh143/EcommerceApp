@@ -204,35 +204,48 @@ export const updateProduct = asyncHandler(async (req, res) => {
       //   })
       // // );
       // product preview image
-      const productPreviewImage = await cloudinaryFileUpload(
-        files?.productPreviewImage.filepath,
-        {
-          folder: "EcommerceApp/products",
-        }
-      );
+      let previewImage;
+      let imageArray = [];
 
-      const previewImage = {
-        secure_url: productPreviewImage?.secure_url,
-        public_id: productPreviewImage?.public_id,
-      };
-
-      const images = Promise.all(
-        Object.values(files?.productFiles).map(async (file) => {
-          const data = await cloudinaryFileUpload(file.filepath, {
+      if (files?.productPreviewImage) {
+        const productPreviewImage = await cloudinaryFileUpload(
+          files?.productPreviewImage?.filepath,
+          {
             folder: "EcommerceApp/products",
-          });
-          return data;
-        })
-      );
+          }
+        );
 
-      const imageData = await images;
-
-      const imageArray = imageData?.map((data) => {
-        return {
-          secure_url: data.secure_url,
-          public_id: data.public_id,
+        previewImage = {
+          secure_url: productPreviewImage?.secure_url,
+          public_id: productPreviewImage?.public_id,
         };
-      });
+      }
+
+      if (files?.productFiles) {
+        let fileArray;
+        if (!Array.isArray(files?.productFiles)) {
+          fileArray = [files.productFiles];
+        } else {
+          fileArray = files?.productFiles;
+        }
+        const images = Promise.all(
+          fileArray.map(async (file) => {
+            const data = await cloudinaryFileUpload(file?.filepath, {
+              folder: "EcommerceApp/products",
+            });
+            return data;
+          })
+        );
+
+        const imageData = await images;
+
+        imageArray = imageData?.map((data) => {
+          return {
+            secure_url: data.secure_url,
+            public_id: data.public_id,
+          };
+        });
+      }
 
       const updatedFields = {};
       Object.keys(fields).forEach((key) => {
@@ -241,82 +254,7 @@ export const updateProduct = asyncHandler(async (req, res) => {
         }
       });
 
-      const sanitizeDescription = await sanitizeHtml(fields?.description, {
-        allowedIframeDomains: ["www.youtube.com"],
-        allowedTags: [
-          "address",
-          "article",
-          "aside",
-          "footer",
-          "header",
-          "h1",
-          "h2",
-          "h3",
-          "h4",
-          "h5",
-          "h6",
-          "hgroup",
-          "main",
-          "nav",
-          "section",
-          "blockquote",
-          "dd",
-          "div",
-          "dl",
-          "dt",
-          "figcaption",
-          "figure",
-          "hr",
-          "li",
-          "main",
-          "ol",
-          "p",
-          "pre",
-          "ul",
-          "a",
-          "abbr",
-          "b",
-          "bdi",
-          "bdo",
-          "br",
-          "cite",
-          "code",
-          "data",
-          "dfn",
-          "em",
-          "i",
-          "kbd",
-          "mark",
-          "q",
-          "rb",
-          "rp",
-          "rt",
-          "rtc",
-          "ruby",
-          "s",
-          "samp",
-          "small",
-          "span",
-          "strong",
-          "sub",
-          "sup",
-          "time",
-          "u",
-          "var",
-          "wbr",
-          "caption",
-          "col",
-          "colgroup",
-          "table",
-          "tbody",
-          "td",
-          "tfoot",
-          "th",
-          "thead",
-          "tr",
-        ],
-        disallowedTagsMode: ["script"],
-      });
+      const sanitizeDescription = await sanitizeHtml(fields?.description);
 
       // create product in db
       const updatedProduct = await Product.findByIdAndUpdate(
@@ -325,7 +263,8 @@ export const updateProduct = asyncHandler(async (req, res) => {
           photos: [...product.photos, ...imageArray],
           ...updatedFields,
           description: sanitizeDescription,
-          previewImage: previewImage,
+          previewImage:
+            previewImage !== "" ? previewImage : product.previewImage,
         },
         { runValidators: false, new: true }
       );
@@ -402,7 +341,10 @@ export const deleteProduct = asyncHandler(async (req, res) => {
  * @returns success message, product object
  ***********************************************************/
 export const getAllProducts = asyncHandler(async (req, res) => {
-  const products = await Product.find({}, "_id name stock previewImage price").populate("collectionId", "name");
+  const products = await Product.find(
+    {},
+    "_id name stock previewImage price createdAt sold"
+  ).populate("collectionId", "name");
 
   if (!products) {
     throw new CustomError("No product found", 404);
