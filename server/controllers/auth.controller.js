@@ -198,7 +198,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   if (!user) {
     throw new CustomError("user not found", 400);
   }
-  const resetToken = user.generateForgotPasswordToken();
+  const resetToken = await user.generateForgotPasswordToken();
   await user.save({ validateBeforeSave: false });
 
   const resetUrl = `${config.CLIENT_SIDE_URL}/password/reset/${resetToken}`;
@@ -259,7 +259,7 @@ export const resetPassword = asyncHandler(async (req, res) => {
   }
 
   if (password !== confirmPassword) {
-    throw new CustomError("password doesn,t match", 400);
+    throw new CustomError("password doesn't match", 400);
   }
 
   user.password = password;
