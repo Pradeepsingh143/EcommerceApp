@@ -1,44 +1,45 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
-import { useCart } from "../context/Product.state";
 import { Button, Paragraph } from "../utils/styledComponents/components";
 import { AiOutlineShoppingCart } from "react-icons/ai";
+import UseCart from "../hooks/UseCart";
 
 const Cart = () => {
-  const cart = useCart();
+  
+  const {cart, removeCartItem, updateItemQty} = UseCart();
 
   return (
     <>
       <section className="bg-white" title="cart-page">
-      {cart.cartItems.length !== 0 ? (
+      {cart.length ? (
           <div className="max-w-screen-xl min-h-screen px-4 py-8 mx-auto sm:px-6 sm:py-12 lg:px-8 container">
             <div className="max-w-3xl mx-auto">
               <div className="mt-8">
                 <ul className="space-y-4">
                   {cart &&
-                    cart.cartItems.map((item, index) => (
+                    cart.map((item, index) => (
                       <li key={index} className="flex items-center pr-2">
                         <img
-                          src={`${item.img_url}`}
+                          src={`${item.previewImage.secure_url}`}
                           alt=""
                           className="object-cover w-10 h-10 sm:w-16 sm:h-16 rounded"
                         />
 
                         <div className="ml-2 sm:ml-4">
                           <h3 className="text-xs sm:text-sm overflow-ellipsis overflow-hidden whitespace-nowrap max-w-[80px] sm:max-w-[160px]">
-                            {item.title}
+                            {item.name}
                           </h3>
 
                           <dl className="mt-0.5 space-y-px text-[10px] text-black/75">
                             <div>
-                              <dt className="overflow-ellipsis overflow-hidden whitespace-nowrap max-w-[120px] sm:max-w-[140px]">
+                              <dt className="overflow-ellipsis overflow-hidden whitespace-nowrap max-w-[120px] sm:max-w-[200px]">
                                 <Paragraph
                                   fontSize={"10px"}
                                   className={
-                                    "hidden sm:flex overflow-ellipsis overflow-hidden whitespace-nowrap max-w-[160px]"
+                                    "hidden sm:flex overflow-ellipsis overflow-hidden whitespace-nowrap max-w-[200px]"
                                   }
                                 >
-                                  {item.shortdescription}
+                                  {item.shortDescription}
                                 </Paragraph>
                               </dt>
                             </div>
@@ -60,12 +61,12 @@ const Cart = () => {
                             <input
                               type="number"
                               min="1"
-                              defaultValue={item.qty}
+                              value={item.qty}
                               id="Line1Qt"
                               className="h-6 w-6 sm:h-8 sm:w-12 rounded border-black] bg-[#fff] p-0 text-center text-xs text-black"
                               onChange={(e) =>
-                                cart.updateItemQty(
-                                  item.id,
+                                updateItemQty(
+                                  item._id,
                                   e.target.value === "" ? 1 : e.target.value
                                 )
                               }
@@ -74,7 +75,7 @@ const Cart = () => {
 
                           <button
                             className="text-gray-600 transition hover:text-red-600"
-                            onClick={() => cart.removeCartItem(item.id)}
+                            onClick={() => removeCartItem(item._id)}
                           >
                             <span className="sr-only">Remove item</span>
 
@@ -105,7 +106,7 @@ const Cart = () => {
                         <dt>Total</dt>
                         <dd>
                           <sup>$</sup>
-                          {cart.cartItems.reduce(
+                          {cart.reduce(
                             (total, price) => total + price.price * price.qty,
                             0
                           )}

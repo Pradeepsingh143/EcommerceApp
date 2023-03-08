@@ -5,13 +5,11 @@ import {
   SubHeading,
   Paragraph,
 } from "../utils/styledComponents/components";
-import ProdcuctCard from "../components/ProductCard";
-import { useProduct } from "../context/Product.state";
-
-
+import ProdcuctCard, { ProductCardSkeleton } from "../components/ProductCard";
+import UseProduct from "../hooks/UseProduct";
 
 const Home = () => {
-  const productData = useProduct(); 
+  const { data, loading } = UseProduct();
 
   return (
     <>
@@ -41,7 +39,10 @@ const Home = () => {
                   Lorem ipsum dolor sit, amet consectetur.
                 </mark>
               </SubHeading>
-              <Paragraph className="mt-4 text-sm sm:text-base" color={"var(--white)"}>
+              <Paragraph
+                className="mt-4 text-sm sm:text-base"
+                color={"var(--white)"}
+              >
                 Lorem ipsum dolor sit amet consectetur adipisicing elit. Modi
                 obcaecati voluptas aut sint, culpa beatae ratione id maxime
                 debitis officiis.
@@ -76,8 +77,16 @@ const Home = () => {
             {/* right column */}
             <div className="right w-full sm:w-1/2 flex justify-end">
               <div className="images grid grid-cols-2 gap-2 w-full sm:w-4/5">
-                <img src="https://res.cloudinary.com/dyjzsykk7/image/upload/v1672392619/cupcakes_gqd30z.jpg"  alt="cupcake" className="h-40 w-full object-cover rounded" />
-                <img src="https://res.cloudinary.com/dyjzsykk7/image/upload/v1672392619/donuts_m44po9.jpg"  alt="donuts" className="h-40 w-full object-cover rounded" />
+                <img
+                  src="https://res.cloudinary.com/dyjzsykk7/image/upload/v1672392619/cupcakes_gqd30z.jpg"
+                  alt="cupcake"
+                  className="h-40 w-full object-cover rounded"
+                />
+                <img
+                  src="https://res.cloudinary.com/dyjzsykk7/image/upload/v1672392619/donuts_m44po9.jpg"
+                  alt="donuts"
+                  className="h-40 w-full object-cover rounded"
+                />
                 <div className="col-span-2">
                   <img
                     src="https://res.cloudinary.com/dyjzsykk7/image/upload/v1672392619/pastry_jdffw1.jpg"
@@ -142,7 +151,12 @@ const Home = () => {
                 praesentium totam in, ullam unde odio quasi autem amet eius
                 numquam suscipit laudantium.
               </Paragraph>
-              <Button className="mt-6 w-24 sm:w-32 text-sm sm:text-base" height={"2.4em"} width={"140px"} bgColor={"var(--black)"}>
+              <Button
+                className="mt-6 w-24 sm:w-32 text-sm sm:text-base"
+                height={"2.4em"}
+                width={"140px"}
+                bgColor={"var(--black)"}
+              >
                 Contact
               </Button>
             </div>
@@ -157,19 +171,24 @@ const Home = () => {
               our products
             </Heading>
             <div className="product mt-4 grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-4">
-              {productData &&
-                productData
+              {loading ? (
+                <ProductCardSkeleton />
+              ) : (
+                data &&
+                data
                   .filter((_data, index) => index < 4)
                   .map((data, index) => (
                     <ProdcuctCard
                       key={index}
-                      title={data.title}
-                      category={data.category}
+                      title={data.name}
+                      category={data.collectionId?.name}
                       price={data.price}
-                      image={data.img_url}
-                      productId={data.id}
+                      image={data.previewImage.secure_url}
+                      productId={data?._id}
+                      loading={loading}
                     />
-                  ))}
+                  ))
+              )}
             </div>
           </div>
         </section>

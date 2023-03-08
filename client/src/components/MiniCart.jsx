@@ -1,9 +1,9 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { useCart } from "../context/Product.state";
+import UseCart from "../hooks/UseCart";
 
 const MiniCart = ({ toggleCart }) => {
-  const { cartItems, removeCartItem, updateItemQty } = useCart();
+  const { cart, updateItemQty, removeCartItem } = UseCart();
 
   return (
     <>
@@ -37,33 +37,36 @@ const MiniCart = ({ toggleCart }) => {
 
         <div className="mt-6 min-h-[88vh] sm:min-h-fit overflow-y-scroll no-scrollbar space-y-6 flex flex-col justify-between">
           <ul className="space-y-4 h-[62vh] sm:h-auto no-scrollbar overflow-y-scroll">
-            {!(cartItems.length === 0) ? (
+            {!(cart.length === 0) ? (
               <>
-                {cartItems &&
-                  cartItems.map((item, index) => (
+                {cart &&
+                  cart.map((item, index) => (
                     <li className="flex items-center" key={index}>
-                      <Link to={`/productpage/${item.id}`} onClick={toggleCart}>
+                      <Link
+                        to={`/productpage/${item._id}`}
+                        onClick={toggleCart}
+                      >
                         <img
-                          src={item.img_url}
-                          alt=""
-                          className="object-cover w-16 h-16 border-2 border-black rounded"
+                          src={item.previewImage.secure_url}
+                          alt="productImg"
+                          className="object-cover min-w-[48px] max-h-14 border border-black rounded"
                         />
                       </Link>
 
                       <div className="ml-4">
                         <h3 className="text-sm">
                           <Link
-                            to={`/productpage/${item.id}`}
+                            to={`/productpage/${item._id}`}
                             onClick={toggleCart}
                           >
-                            {item.title}
+                            {item.name}
                           </Link>
                         </h3>
 
                         <dl className="mt-0.5 space-y-px text-[10px] text-black/75">
                           <div>
-                            <dt className="overflow-ellipsis overflow-hidden whitespace-nowrap max-w-[145px]">
-                              {item.shortdescription}
+                            <dt className="overflow-ellipsis overflow-hidden whitespace-nowrap max-w-[120px] sm:max-w-[145px]">
+                              {item?.shortDescription}
                             </dt>
                           </div>
                         </dl>
@@ -81,10 +84,10 @@ const MiniCart = ({ toggleCart }) => {
                             min="1"
                             defaultValue={item.qty}
                             id="Line1Qty"
-                            className="h-8 w-12 rounded border-2 border-black bg-yellow-100/50 p-0 text-center text-xs text-black"
+                            className="h-8 w-10 sm:w-12 sm:h-8 rounded border-2 border-black bg-yellow-100/50 p-0 text-center text-xs text-black"
                             onChange={(e) =>
                               updateItemQty(
-                                item.id,
+                                item._id,
                                 e.target.value === "" ? 1 : e.target.value
                               )
                             }
@@ -93,7 +96,7 @@ const MiniCart = ({ toggleCart }) => {
 
                         <button
                           className="transition hover:text-red-600"
-                          onClick={() => removeCartItem(item.id)}
+                          onClick={() => removeCartItem(item._id)}
                         >
                           <span className="sr-only">Remove item</span>
 
@@ -129,7 +132,7 @@ const MiniCart = ({ toggleCart }) => {
               onClick={toggleCart}
               className="block rounded-full border-2 border-black px-5 py-3 text-sm shadow-[0_4px_0_0] shadow-black transition hover:ring-1 hover:ring-black"
             >
-              View my cart ({cartItems.length})
+              View my cart ({cart.length})
             </Link>
 
             <Link

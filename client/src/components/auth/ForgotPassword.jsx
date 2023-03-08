@@ -1,33 +1,19 @@
-import React, { useState} from "react";
-import axios from "axios";
+import React, { useState } from "react";
+import AxiosRequest from "../../hooks/AxiosRequest";
 import { SiMinutemailer } from "react-icons/si";
-
 
 const ForgotPassword = () => {
   // const navigate = useNavigate();
-  const [message, setMessage] = useState({
-    message: "",
-    code: "",
-    loading: ""
-  });
-  const [user, setUser] = useState({ email: "" });
+  const [email, setEmail] = useState('');
+  const [loading, message, request] = AxiosRequest(
+    "/api/auth/password/forgot",
+    "post",
+    {}
+  );
 
-  const ForgotPasswordHandle = async (e) => {
+  const ForgotPasswordHandle = async(e) => {
     e.preventDefault();
-    try {
-      setMessage({loading: true})
-      const response = await axios.post("/api/auth/password/forgot", user);
-      setUser({ email: "" });
-      setMessage({ message: response.data.message, code: response.status, loading: false });
-      // navigate("/");
-    } catch (error) {
-      console.log("Error forgotpassword form: ", error);
-      setMessage({
-        message: error.response.data.message,
-        code: error.response.status,
-        loading: false
-      });
-    }
+    await request({email});
   };
 
   return (
@@ -56,12 +42,8 @@ const ForgotPassword = () => {
                   type="email"
                   autoComplete="email"
                   required
-                  value={user.email}
-                  onChange={(e) => {
-                    setUser({
-                      email: e.target.value,
-                    });
-                  }}
+                  value={email}
+                  onChange={(e) =>setEmail(e.target.value)}
                   className="relative block w-full appearance-none rounded-none rounded-t-md border border-gray-300 px-3 py-3 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
                   placeholder="Enter your email address"
                 />
@@ -82,8 +64,12 @@ const ForgotPassword = () => {
                 Submit
               </button>
               <div className="mt-2">
-                {message.loading? <p className="text-green-600">Email Sending...</p>: ""}
-              {message.code ? (
+                {loading ? (
+                  <p className="text-green-600"> Email Sending...</p>
+                ) : (
+                  ""
+                )}
+                {message.code ? (
                   message.code > 250 ? (
                     <p className="text-red-600">{`${message.code}: ${message.message}`}</p>
                   ) : (

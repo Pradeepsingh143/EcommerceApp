@@ -1,28 +1,19 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { HiLockClosed } from "react-icons/hi";
 import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import UseAxiosRequest from "../../hooks/AxiosRequest";
 
 const Register = () => {
-  const navigate = useNavigate();
   const [user, setUser] = useState({ name: "", email: "", password: "" });
-  const [message, setMessage] = useState({ message: "", code: "" });
+  const [loading, message, request] = UseAxiosRequest(
+    "/api/auth/signup",
+    "post",
+    {}
+  );
 
-  const registerHandle = async (e) => {
+  const registerHandle = async(e) => {
     e.preventDefault();
-    try {
-      const response = await axios.post("/api/auth/signup", user);
-      setUser({ name: "", email: "", password: "" });
-      setMessage({ message: response.data.message, code: response.status });
-      navigate("/api/auth/login")
-    } catch (error) {
-      console.log("Error register form: ", error);
-      setMessage({
-        message: error.response.data.message,
-        code: error.response.status,
-      });
-    }
+    await request({ name: user.name, email: user.email, password: user.password });
   };
 
   return (
@@ -120,6 +111,11 @@ const Register = () => {
                 Register
               </button>
               <div className="mt-2">
+                {loading ? (
+                  <p className="text-green-600">Email Sending...</p>
+                ) : (
+                  ""
+                )}
                 {message.code ? (
                   message.code > 250 ? (
                     <p className="text-red-600">{`${message.code}: ${message.message}`}</p>
@@ -134,10 +130,10 @@ const Register = () => {
 
             <div className="flex items-center">
               <Link
-                to={"/api/auth/login"}
+                to={"/login"}
                 className="font-normal text-black hover:brightness-50"
               >
-                Already have account
+                Already an have account
               </Link>
             </div>
           </form>

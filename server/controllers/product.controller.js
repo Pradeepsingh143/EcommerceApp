@@ -7,7 +7,8 @@ import {
 import Mongoose from "mongoose";
 import asyncHandler from "../services/asyncHandler.js";
 import CustomError from "../utils/customError.js";
-import sanitizeHtml from "sanitize-html";
+import DOMPurify from 'isomorphic-dompurify';
+
 // import { s3DeleteFile, s3FileUpload } from "../services/s3.files.js";
 // import config from "../config/index.js";
 // import fs from "fs";
@@ -105,9 +106,27 @@ export const addProduct = asyncHandler(async (req, res) => {
         };
       });
 
-      const sanitizeDescription = sanitizeHtml(fields.description, {
-        allowedIframeDomains: ["www.youtube.com"],
-      });
+      const cleanHtml = DOMPurify.sanitize(fields?.description, {
+        ALLOWED_TAGS: [
+          'a', 'abbr', 'acronym', 'address', 'area', 'article', 'aside', 'audio', 'b',
+          'big', 'blockquote', 'br', 'button', 'canvas', 'caption', 'center', 'cite', 'code',
+          'col', 'colgroup', 'datalist', 'dd', 'del', 'details', 'dfn', 'dialog', 'div', 'dl',
+          'dt', 'em', 'embed', 'fieldset', 'figcaption', 'figure', 'footer', 'form', 'h1', 'h2',
+          'h3', 'h4', 'h5', 'h6', 'header', 'hr', 'i', 'img', 'input', 'ins', 'kbd', 'label',
+          'legend', 'li', 'map', 'mark', 'menu', 'meter', 'nav', 'ol', 'optgroup', 'option',
+          'output', 'p', 'param', 'pre', 'progress', 'q', 's', 'samp', 'section', 'select',
+          'small', 'source', 'span', 'strike', 'strong', 'sub', 'sup', 'table', 'tbody', 'td',
+          'textarea', 'tfoot', 'th', 'thead', 'time', 'tr', 'track', 'tt', 'u', 'ul', 'var',
+          'video', 'wbr'
+        ],
+        ALLOWED_ATTR: [
+          'align', 'alt', 'border', 'cite', 'class', 'color', 'controls', 'data-*', 'datetime',
+          'dir', 'download', 'height', 'hidden', 'href', 'id', 'lang', 'loop', 'name', 'poster',
+          'preload', 'rel', 'required', 'scoped', 'selected', 'size', 'spellcheck', 'src', 'srcset',
+          'style', 'tabindex', 'title', 'translate', 'type', 'usemap', 'width'
+        ]
+      })
+      console.log(cleanHtml);
 
       // create product in db
       const product = await Product.create({
@@ -115,7 +134,7 @@ export const addProduct = asyncHandler(async (req, res) => {
         photos: imageArray,
         previewImage: previewImage,
         ...fields,
-        description: sanitizeDescription,
+        // description: cleanHtml,
       });
 
       // if product not created
@@ -166,7 +185,6 @@ export const addProduct = asyncHandler(async (req, res) => {
  * @returns success message, product object
  ***********************************************************/
 
-// need to work in this controller
 export const updateProduct = asyncHandler(async (req, res) => {
   const { id: productId } = req.params;
 
@@ -254,7 +272,9 @@ export const updateProduct = asyncHandler(async (req, res) => {
         }
       });
 
-      const sanitizeDescription = await sanitizeHtml(fields?.description);
+      const dirtyHtml = fields?.description;
+      const cleanHtml = DOMPurify.sanitize(dirtyHtml);
+      console.log(cleanHtml);
 
       // create product in db
       const updatedProduct = await Product.findByIdAndUpdate(
@@ -262,7 +282,7 @@ export const updateProduct = asyncHandler(async (req, res) => {
         {
           photos: [...product.photos, ...imageArray],
           ...updatedFields,
-          description: sanitizeDescription,
+          // description: cleanHtml,
           previewImage:
             previewImage !== "" ? previewImage : product.previewImage,
         },
@@ -343,7 +363,7 @@ export const deleteProduct = asyncHandler(async (req, res) => {
 export const getAllProducts = asyncHandler(async (req, res) => {
   const products = await Product.find(
     {},
-    "_id name stock previewImage price createdAt sold"
+    "_id name stock previewImage price createdAt sold shortDescription"
   ).populate("collectionId", "name");
 
   if (!products) {
@@ -366,7 +386,10 @@ export const getAllProducts = asyncHandler(async (req, res) => {
  ***********************************************************/
 export const getProductById = asyncHandler(async (req, res) => {
   const { id: productId } = req.params;
-  const product = await Product.findById(productId);
+  const product = await Product.findById(productId).populate(
+    "collectionId",
+    "name"
+  );
 
   if (!product) {
     throw new CustomError("Product not found", 404);

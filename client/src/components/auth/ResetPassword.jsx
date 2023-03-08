@@ -1,34 +1,41 @@
-import React, { useState} from "react";
+import React, { useState, useTransition } from "react";
 import axios from "axios";
 import { SiMinutemailer } from "react-icons/si";
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from "react-router-dom";
 
 const ResetPassword = () => {
-  const {token} = useParams()
-  // const navigate = useNavigate();
+  const { token } = useParams();
+  const navigate = useNavigate();
   const [message, setMessage] = useState({
     message: "",
     code: "",
-    loading: ""
+    loading: "",
   });
-  const [user, setUser] = useState({ password: "" , confirmPassword: ""});
+  const [user, setUser] = useState({ password: "", confirmPassword: "" });
 
-  const ResetPasswordHandle = async (e) => {
-    e.preventDefault();
-    try {
-      setMessage({loading: true})
-      const response = await axios.put(`/api/auth/password/reset/${token}`, user);
-      setUser({ password: "", confirmPassword: "" });
-      setMessage({ message: response.data.message, code: response.status, loading: false });
-      // navigate("/");
-    } catch (error) {
-      console.log("Error forgotpassword form: ", error);
-      setMessage({
-        message: error.response.data.message,
-        code: error.response.status,
-        loading: false
-      });
-    }
+  const ResetPasswordHandle = async(e) => {
+      e.preventDefault();
+      try {
+        setMessage({ loading: true });
+        const response = await axios.put(
+          `/api/auth/password/reset/${token}`,
+          user
+        );
+        setUser({ password: "", confirmPassword: "" });
+        setMessage({
+          message: response.data.message,
+          code: response.status,
+          loading: false,
+        });
+        navigate("/login");
+      } catch (error) {
+        console.log("Error forgotpassword form: ", error);
+        setMessage({
+          message: error.response.data.message,
+          code: error.response.status,
+          loading: false,
+        });
+      }
   };
 
   return (
@@ -103,8 +110,12 @@ const ResetPassword = () => {
                 Submit
               </button>
               <div className="mt-2">
-                {message.loading? <p className="text-green-600">Email Sending...</p>: ""}
-              {message.code ? (
+                {message.loading ? (
+                  <p className="text-green-600">Email Sending...</p>
+                ) : (
+                  ""
+                )}
+                {message.code ? (
                   message.code > 250 ? (
                     <p className="text-red-600">{`${message.code}: ${message.message}`}</p>
                   ) : (
@@ -122,5 +133,4 @@ const ResetPassword = () => {
   );
 };
 
-
-export default ResetPassword
+export default ResetPassword;

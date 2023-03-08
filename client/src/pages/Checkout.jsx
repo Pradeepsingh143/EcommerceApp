@@ -1,15 +1,16 @@
 import React from "react";
 import { Button} from "../utils/styledComponents/components";
-import { FaShopware } from "react-icons/fa";
-import { useCart } from "../context/Product.state";
 import { Link } from "react-router-dom";
+import UseCart from "../hooks/UseCart";
+import { FaShopware } from "react-icons/fa";
 import {AiOutlineShoppingCart} from "react-icons/ai"
 import {CgPaypal} from "react-icons/cg"
 
 
 const Checkout = () => {
-  const cart = useCart();
 
+  const {cart} = UseCart();
+  
   return (
     <>
       <section className="bg-white" title="checkout-page">
@@ -29,7 +30,7 @@ const Checkout = () => {
               <div>
                 <p className="text-2xl font-medium tracking-tight text-gray-900">
                   <sup>$</sup>
-                  {cart.cartItems.reduce(
+                  {cart.reduce(
                     (total, price) => total + (price.price * price.qty),
                     0
                   )}
@@ -39,24 +40,23 @@ const Checkout = () => {
                   For the purchase of
                 </p>
               </div>
-             
 
-              {cart.cartItems.length !== 0 ? (
+              {cart.length !== 0 ? (
                 <div>
                   <div className="flow-root">
                     <ul className="-my-4 divide-y divide-gray-100">
                       {cart &&
-                        cart.cartItems.map((item, index) => (
+                        cart.map((item, index) => (
                           <li key={index} className="flex items-center pr-2">
                               <img
-                                src={item.img_url}
+                                src={item.previewImage?.secure_url}
                                 alt=""
                                 className="object-cover w-16 h-16 rounded"
                               />
 
                               <div className="ml-4">
                                 <h3 className="text-sm text-gray-900">
-                                  {item.title}
+                                  {item.name}
                                 </h3>
 
                                 <dl className="mt-0.5 space-y-px text-[10px] text-gray-600">

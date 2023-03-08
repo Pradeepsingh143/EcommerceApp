@@ -20,11 +20,11 @@
     "express": "^4.18.2",
     "formidable": "^2.1.1",
     "googleapis": "^110.0.0",
+    "isomorphic-dompurify": "^1.0.0",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.8.0",
     "nodemailer": "^6.8.0",
-    "razorpay": "^2.8.4",
-    "sanitize-html": "^2.9.0"
+    "razorpay": "^2.8.4"
   },
   "devDependencies": {
     "morgan": "^1.10.0",

@@ -1,30 +1,44 @@
-import React, { useState } from "react";
-import axios from "axios";
+import React, { useState, useEffect } from "react";
 import { HiLockClosed } from "react-icons/hi";
-import { Link } from "react-router-dom";
-// import { useNavigate } from "react-router-dom";
-
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import AxiosRequest from "../../hooks/AxiosRequest";
+import useAuth from "../../hooks/UseAuth";
 
 const Login = () => {
-  // const navigate = useNavigate();
-  const [message, setMessage] = useState({ message: "", code: "" });
+  const { setAuth, persist, setPersist } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || "/";
   const [user, setUser] = useState({ email: "", password: "" });
+  const [loading, message, request] = AxiosRequest(
+    "/api/auth/login",
+    "post",
+    {}
+  );
 
   const loginHandle = async (e) => {
-    e.preventDefault();
     try {
-      const response = await axios.post("/api/auth/login", user);
-      setUser({ email: "", password: "" });
-      setMessage({ message: response.data.message, code: response.status });
-      // navigate("/");
+    e.preventDefault();
+    const data = await request({ email: user.email, password: user.password });
+    setAuth({
+      accessToken: data?.accessToken,
+      role: data?.user?.role,
+      user: data.user,
+    });
+    setUser({ email: "", password: "" });
+    navigate(from, { replace: true });
     } catch (error) {
-      console.log("Error login form: ", error);
-      setMessage({
-        message: error.response.data.message,
-        code: error.response.status,
-      });
+      console.log(error);
     }
   };
+
+  const togglePersist = () => {
+    setPersist((prev) => !prev);
+  };
+
+  useEffect(() => {
+    localStorage.setItem("persist", persist);
+  }, [persist]);
 
   return (
     <>
@@ -84,6 +98,7 @@ const Login = () => {
 
             <div>
               <button
+                disabled={loading? true : false}
                 type="submit"
                 className="group relative flex w-full justify-center rounded-md border border-transparent bg-black brightness-75 py-2 px-4 text-sm font-medium text-white hover:brightness-100 focus:outline-none focus:ring-2 focus:bg-black focus:ring-offset-2"
               >
@@ -105,13 +120,24 @@ const Login = () => {
                 ) : (
                   ""
                 )}
+                {loading ? "...loading" : null}
               </div>
             </div>
+
+            <div className="persistCheck">
+                    <input
+                        type="checkbox"
+                        id="persist"
+                        onChange={togglePersist}
+                        checked={persist}
+                    />
+                    <label htmlFor="persist"> Trust This Device</label>
+                </div>
 
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <Link
-                  to={"/api/auth/register"}
+                  to={"/register"}
                   className="font-normal text-black hover:brightness-50"
                 >
                   Don't have account register now
@@ -120,7 +146,7 @@ const Login = () => {
 
               <div className="text-sm">
                 <Link
-                  to={"/api/auth/password/forgot"}
+                  to={"/password/forgot"}
                   className="font-medium text-blue-500 hover:text-blue-700"
                 >
                   Forgot your password?
