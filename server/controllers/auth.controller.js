@@ -117,10 +117,8 @@ export const login = asyncHandler(async (req, res) => {
  ***********************************************************/
 export const refreshToken = asyncHandler(async (req, res) => {
   const cookies = req.cookies;
-  console.log("cookies: ", cookies);
   if (!cookies?.JwtToken) return res.sendStatus(401);
   const refreshToken = cookies.JwtToken;
-  console.log("RefreshToken: ", refreshToken);
   // Is refreshToken in db?
   const user = await User.findOne({ refreshToken }, "_id role email name");
   if (!user) {
@@ -273,7 +271,7 @@ export const resetPassword = asyncHandler(async (req, res) => {
   user.password = undefined;
 
   //helper method for cookie can be added
-  res.cookie("token", token, cookieOptions);
+  res.cookie("JwtToken", token, cookieOptions);
   res.status(200).json({
     success: true,
     message: "password reset successfully",
