@@ -77,7 +77,7 @@ userSchema.methods = {
       .update(forgotToken)
       .digest("hex");
 
-    this.forgotPasswordExpiry = new Date(Date.now() + 20 * 60 * 1000);
+    this.forgotPasswordExpiry = Date.now() + 20 * 60 * 1000;
     return forgotToken
   },
 };
