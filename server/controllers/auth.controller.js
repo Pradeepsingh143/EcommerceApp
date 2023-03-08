@@ -206,14 +206,14 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   const mailMessage = `Reset your password \n\n Hi ${
     user.name
   }, \n We received your request to reset your ${
-    req.hostname
+    config.CLIENT_SIDE_URL
   } account password.\n\n Please click the link below to reset it.\n\n
   ${resetUrl} \n\n This password reset link will expire at ${user.forgotPasswordExpiry.toLocaleString()}`;
 
   try {
     await mailHelper({
       email: user.email,
-      subject: `[${req.hostname}] Password Reset`,
+      subject: `[${config.CLIENT_SIDE_URL}] Password Reset`,
       text: mailMessage,
     });
     res.status(200).json({
