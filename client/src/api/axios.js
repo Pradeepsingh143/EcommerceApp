@@ -1,5 +1,6 @@
 import axios from 'axios';
-const BASE_URL = 'http://localhost:4000';
+const BASE_URL = 'https://ecommerceapp-production-3897.up.railway.app';
+// const BASE_URL = 'http://localhost:4000';
 
 export default axios.create({
     baseURL: BASE_URL
