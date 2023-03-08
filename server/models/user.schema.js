@@ -71,7 +71,7 @@ userSchema.methods = {
 
   // forgot passsword
   generateForgotPasswordToken: function () {
-    const forgotToken = crypto.randomBytes(18).toString("hex");
+    const forgotToken = crypto.randomBytes(24).toString("hex");
     this.forgotPasswordToken = crypto
       .createHash("sha256")
       .update(forgotToken)

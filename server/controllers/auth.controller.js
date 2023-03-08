@@ -269,7 +269,7 @@ export const resetPassword = asyncHandler(async (req, res) => {
   await user.save();
 
   //create token and send as response to user
-  const token = user.getJwtToken();
+  const token = user.getJwtToken(config.JWT_REFRESH_TOKEN_EXPIRY);
   user.password = undefined;
 
   //helper method for cookie can be added
