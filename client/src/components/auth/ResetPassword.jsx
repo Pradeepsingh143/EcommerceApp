@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import axios from "../../api/axios"
 import { SiMinutemailer } from "react-icons/si";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -19,7 +19,7 @@ const ResetPassword = () => {
         setMessage({ loading: true });
         const response = await axios.put(
           `/api/auth/password/reset/${token}`,
-          user
+          user,
         );
         setUser({ password: "", confirmPassword: "" });
         setMessage({
