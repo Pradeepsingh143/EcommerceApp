@@ -111,7 +111,7 @@ const ResetPassword = () => {
               </button>
               <div className="mt-2">
                 {message.loading ? (
-                  <p className="text-green-600">Email Sending...</p>
+                  <p className="text-green-600">changing password...</p>
                 ) : (
                   ""
                 )}
