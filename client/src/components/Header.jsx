@@ -44,18 +44,18 @@ const Header = () => {
 
           <div className="flex gap-8 sm:gap-16 items-center">
             {/* main menu */}
-            <nav className="navMainMenu list-none text-sm uppercase text-black font-semibold gap-x-4 hidden sm:flex">
+            <nav className="navMainMenu list-none text-sm uppercase text-white font-semibold gap-x-4 hidden sm:flex">
               <Link to={"/"} className="cursor-pointer">
-                <button className="hover:brightness-50 p-2 px-4">Home</button>
+                <button className="brightness-90 hover:brightness-100 p-2 px-4">Home</button>
               </Link>
               <Link to={"/shop"} className="cursor-pointer">
-                <button className="hover:brightness-50 p-2 px-4">Shop</button>
+                <button className="brightness-90 hover:brightness-100 p-2 px-4">Shop</button>
               </Link>
               <Link to={"/login"} className="cursor-pointer">
-                <button className="hover:brightness-50 p-2 px-4">Login</button>
+                <button className="brightness-90 hover:brightness-100 p-2 px-4">Login</button>
               </Link>
               <Link to={"/register"} className="cursor-pointer">
-                <button className="hover:brightness-50 p-2 px-4">Register</button>
+                <button className="brightness-90 hover:brightness-100 p-2 px-4">Register</button>
               </Link>
             </nav>
 
@@ -110,7 +110,7 @@ const Header = () => {
               <div className="cartIcon relative">
                 <button onClick={toggleCart}>
                   <h2 className="cursor-pointer">
-                    <BsFillCartCheckFill size={"24px"} title="hamburger" />
+                    <BsFillCartCheckFill size={"24px"} color={"var(--black)"} title="hamburger" />
                   </h2>
                   <p className="bg-white rounded-full text-center text-xs absolute bottom-4 left-3 w-4">
                     {/* {cartItems.length} */}
